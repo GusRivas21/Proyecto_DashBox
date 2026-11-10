@@ -12,8 +12,13 @@ return new class extends Migration
             $table->unsignedBigInteger('id')->primary(); // same id as users (inherits from User)
             $table->string('first_name', 80);
             $table->string('last_name', 80);
-            $table->foreign('id')->references('id')->on('users')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreign('id')
+                ->references('id')
+                ->on('users')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

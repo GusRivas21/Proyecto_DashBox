@@ -5,10 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\User;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Administrator extends Model
 {
+    use SoftDeletes;
+
     public $incrementing = false;
+    protected $keyType = 'int';
 
     protected $fillable = [
         'id',
@@ -18,8 +23,9 @@ class Administrator extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'id');
+        return $this->belongsTo(User::class, 'id', 'id');
     }
+
 
     public function companies(): HasMany
     {

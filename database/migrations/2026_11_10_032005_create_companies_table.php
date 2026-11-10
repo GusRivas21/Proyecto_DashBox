@@ -9,7 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('companies', function (Blueprint $table) {
-            $table->id();
+            $table->unsignedBigInteger('id')->primary();
+            $table->foreign('id')
+                ->references('id')
+                ->on('users')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->foreignId('zone_id')->constrained('zones')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('administrator_id')->constrained('administrators')->cascadeOnUpdate()->restrictOnDelete();
             $table->string('legal_name', 150);
@@ -17,6 +22,7 @@ return new class extends Migration
             $table->string('tax_id', 20)->unique();
             $table->string('phone', 20)->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

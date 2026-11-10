@@ -9,7 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('drivers', function (Blueprint $table) {
-            $table->id();
+            $table->unsignedBigInteger('id')->primary();
+            $table->foreign('id')
+                ->references('id')
+                ->on('users')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->foreignId('vehicle_id')->nullable()->constrained('vehicles')->cascadeOnUpdate()->nullOnDelete();
             $table->foreignId('zone_id')->constrained('zones')->cascadeOnUpdate()->restrictOnDelete();
             $table->foreignId('manager_id')->constrained('managers')->cascadeOnUpdate()->restrictOnDelete();
@@ -19,6 +24,7 @@ return new class extends Migration
             $table->string('license_number', 30)->unique();
             $table->string('phone', 20)->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

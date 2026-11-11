@@ -64,11 +64,17 @@ class RolePermissionSeeder extends Seeder
             'recipients.delete',
 
             // Shipments
+            'unassignedShipments.view',
             'shipments.view',
             'shipments.create',
             'shipments.edit',
             'shipments.assign',
             'shipments.update_status',
+            'shipments.return',
+
+            // Deliveries
+            'deliveries.view',
+            'deliveries.create',
 
             // Reports and History
             'reports.view',
@@ -117,10 +123,11 @@ class RolePermissionSeeder extends Seeder
 
             'vehicles.view',
 
-            'shipments.view',
+            'unassignedShipments.view',
             'shipments.edit',
             'shipments.assign',
             'shipments.update_status',
+            'shipments.return',
 
             'reports.view',
             'reports.generate',
@@ -152,9 +159,10 @@ class RolePermissionSeeder extends Seeder
 
         $transporter->syncPermissions([
             'dashboard.view',
-
             'shipments.view',
             'shipments.update_status',
+            'deliveries.view',
+            'deliveries.create'
         ]);
 
         app()[PermissionRegistrar::class]->forgetCachedPermissions();

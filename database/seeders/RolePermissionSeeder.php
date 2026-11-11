@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 class RolePermissionSeeder extends Seeder
 {
     /**
@@ -13,7 +14,13 @@ class RolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
         $permissions = [
+
+            // Dashboard
+            'dashboard.view',
+
             // Users
             'users.view',
             'users.create',
@@ -63,9 +70,16 @@ class RolePermissionSeeder extends Seeder
             'shipments.assign',
             'shipments.update_status',
 
-            // Reports
+            // Reports and History
             'reports.view',
             'reports.generate',
+
+            // Emergency
+            'emergency.view',
+            'emergency.edit',
+
+            // Audit
+            'audit.view',
         ];
 
         foreach ($permissions as $permission) {
@@ -75,54 +89,74 @@ class RolePermissionSeeder extends Seeder
             ]);
         }
 
-        // Create roles
-
+        // ADMINISTRATOR
         $administrator = Role::firstOrCreate([
             'name' => 'administrator',
             'guard_name' => 'web',
         ]);
 
+        $administrator->syncPermissions([
+            'dashboard.view',
+            'companies.view',
+            'managers.view',
+            'reports.view',
+            'emergency.view',
+            'audit.view',
+        ]);
+
+        // MANAGER
         $manager = Role::firstOrCreate([
             'name' => 'manager',
             'guard_name' => 'web',
         ]);
 
+        $manager->syncPermissions([
+            'dashboard.view',
+
+            'transporters.view',
+
+            'vehicles.view',
+
+            'shipments.view',
+            'shipments.edit',
+            'shipments.assign',
+            'shipments.update_status',
+
+            'reports.view',
+            'reports.generate',
+        ]);
+
+        // COMPANY
         $company = Role::firstOrCreate([
             'name' => 'company',
             'guard_name' => 'web',
         ]);
 
+        $company->syncPermissions([
+            'dashboard.view',
+
+            'recipients.view',
+            'recipients.create',
+            'recipients.edit',
+            'recipients.delete',
+
+            'shipments.view',
+            'shipments.create',
+        ]);
+
+        // TRANSPORTER
         $transporter = Role::firstOrCreate([
             'name' => 'transporter',
             'guard_name' => 'web',
         ]);
 
-        // Assign permissions to roles
-        $administrator->syncPermissions(Permission::all());
-
-        $manager->syncPermissions([
-            'transporters.view',
-            'vehicles.view',
-            'shipments.view',
-            'shipments.edit',
-            'shipments.assign',
-            'shipments.update_status',
-            'reports.view',
-            'reports.generate',
-        ]);
-
-        $company->syncPermissions([
-            'recipients.view',
-            'recipients.create',
-            'recipients.edit',
-            'recipients.delete',
-            'shipments.view',
-            'shipments.create',
-        ]);
-
         $transporter->syncPermissions([
+            'dashboard.view',
+
             'shipments.view',
             'shipments.update_status',
         ]);
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }

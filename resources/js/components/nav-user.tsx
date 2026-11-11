@@ -1,8 +1,21 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
+
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+import {
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    useSidebar,
+} from '@/components/ui/sidebar';
+
 import { UserInfo } from '@/components/user-info';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useIsMobile } from '@/hooks/use-mobile';
+
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 import { ChevronsUpDown } from 'lucide-react';
@@ -17,15 +30,37 @@ export function NavUser() {
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <SidebarMenuButton size="lg" className="text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent group">
+                        <SidebarMenuButton
+                            size="lg"
+                            className="
+                                h-12
+                                text-white/80
+                                hover:bg-[#1D4050]
+                                hover:text-white
+                                data-[state=open]:bg-[#1D4050]
+                                data-[state=open]:text-white
+                            "
+                        >
                             <UserInfo user={auth.user} />
-                            <ChevronsUpDown className="ml-auto size-4" />
+
+                            <ChevronsUpDown className="ml-auto size-4 text-[#A9C6D3]" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
+
                     <DropdownMenuContent
-                        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                        className="
+                            w-(--radix-dropdown-menu-trigger-width)
+                            min-w-56
+                            rounded-lg
+                        "
                         align="end"
-                        side={isMobile ? 'bottom' : state === 'collapsed' ? 'left' : 'bottom'}
+                        side={
+                            isMobile
+                                ? 'bottom'
+                                : state === 'collapsed'
+                                  ? 'left'
+                                  : 'bottom'
+                        }
                     >
                         <UserMenuContent user={auth.user} />
                     </DropdownMenuContent>

@@ -1,4 +1,3 @@
-
 import { NavUser } from '@/components/nav-user';
 
 import {
@@ -31,7 +30,7 @@ import {
     Users,
     Package,
     ContactRound,
-    PackageCheck
+    PackageCheck,
 } from 'lucide-react';
 
 type SidebarNavItem = {
@@ -102,7 +101,7 @@ const mainNavItems: SidebarNavItem[] = [
         title: 'Envíos pendientes',
         url: '/unassignedShipments',
         icon: PackageSearch,
-        permission: 'unassignedShipments.view'
+        permission: 'unassignedShipments.view',
     },
     {
         title: 'Devoluciones',
@@ -117,18 +116,31 @@ const mainNavItems: SidebarNavItem[] = [
         permission: 'recipients.view',
     },
     {
-        title: 'Envios',
+        title: 'Envíos',
         url: '/shipments',
-        icon:  Package,
+        icon: Package,
         permission: 'shipments.view',
     },
     {
         title: 'Entregas',
         url: '/deliveries',
-        icon:  PackageCheck,
+        icon: PackageCheck,
         permission: 'deliveries.view',
     },
 ];
+
+const navButtonClass = `
+    h-11 gap-3 px-3
+    text-sidebar-foreground/70
+    hover:bg-sidebar-accent hover:text-sidebar-foreground
+    data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-foreground
+`;
+
+const adminButtonClass = `
+    h-14 gap-3 px-3
+    bg-sidebar-accent text-sidebar-foreground
+    hover:bg-sidebar-accent hover:text-sidebar-foreground
+`;
 
 export function AppSidebar() {
     const { url, props } = usePage<PageProps>();
@@ -140,33 +152,25 @@ export function AppSidebar() {
     );
 
     return (
-        <Sidebar
-            collapsible="icon"
-            variant="sidebar"
-            className="
-                border-none
-                [&_[data-sidebar=sidebar]]:bg-[#10242F]
-                [&_[data-sidebar=sidebar]]:text-white
-            "
-        >
+        <Sidebar collapsible="icon" variant="sidebar" className="border-none">
             {/* LOGO */}
-            <SidebarHeader className="bg-[#10242F] px-5 pb-2 pt-7 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-5">
+            <SidebarHeader className="px-5 pb-2 pt-7 group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:pt-5">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             size="lg"
                             asChild
-                            className="h-auto gap-3 text-white hover:bg-transparent hover:text-white"
+                            className="h-auto gap-3 text-sidebar-foreground hover:bg-transparent hover:text-sidebar-foreground"
                         >
                             <Link href="/dashboard">
-                                <Package className="!size-6 text-[#A9C6D3]" />
+                                <Package className="!size-6 text-sidebar-primary" />
 
                                 <div className="flex flex-col gap-1">
-                                    <span className="text-xl font-bold tracking-tight text-white">
+                                    <span className="text-xl font-bold tracking-tight text-sidebar-foreground">
                                         DASHBOX
                                     </span>
 
-                                    <span className="text-[11px] font-medium uppercase tracking-wider text-white/50">
+                                    <span className="text-[11px] font-medium uppercase tracking-wider text-sidebar-foreground/50">
                                         Gestión de envíos
                                     </span>
                                 </div>
@@ -177,8 +181,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             {/* CONTENIDO */}
-            <SidebarContent className="bg-[#10242F] px-4 pt-6 group-data-[collapsible=icon]:px-2">
-
+            <SidebarContent className="px-4 pt-6 group-data-[collapsible=icon]:px-2">
                 {/* ADMINISTRADOR */}
                 <SidebarGroup className="p-0">
                     <SidebarGroupContent>
@@ -186,15 +189,7 @@ export function AppSidebar() {
                             <SidebarMenuItem>
                                 <SidebarMenuButton
                                     tooltip="Administrador"
-                                    className="
-                                        h-14
-                                        gap-3
-                                        px-3
-                                        bg-[#1D4050]
-                                        text-white
-                                        hover:bg-[#1D4050]
-                                        hover:text-white
-                                    "
+                                    className={adminButtonClass}
                                 >
                                     <Users className="!size-5 group-data-[collapsible=icon]:!size-4" />
 
@@ -203,7 +198,7 @@ export function AppSidebar() {
                                             Administrador
                                         </span>
 
-                                        <span className="text-[11px] text-white/60">
+                                        <span className="text-[11px] text-sidebar-foreground/60">
                                             Operaciones generales
                                         </span>
                                     </div>
@@ -215,7 +210,7 @@ export function AppSidebar() {
 
                 {/* MENÚ PRINCIPAL */}
                 <SidebarGroup className="mt-6 p-0">
-                    <SidebarGroupLabel className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-widest text-white/40 group-data-[collapsible=icon]:mb-0">
+                    <SidebarGroupLabel className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-widest text-sidebar-foreground/40 group-data-[collapsible=icon]:mb-0">
                         Principal
                     </SidebarGroupLabel>
 
@@ -230,21 +225,12 @@ export function AppSidebar() {
                                 const Icon = item.icon;
 
                                 return (
-                                    <SidebarMenuItem key={item.title}>
+                                    <SidebarMenuItem key={item.url}>
                                         <SidebarMenuButton
                                             asChild
                                             isActive={isActive}
                                             tooltip={item.title}
-                                            className="
-                                                h-11
-                                                gap-3
-                                                px-3
-                                                text-white/70
-                                                hover:bg-[#1D4050]
-                                                hover:text-white
-                                                data-[active=true]:bg-[#1D4050]
-                                                data-[active=true]:text-white
-                                            "
+                                            className={navButtonClass}
                                         >
                                             <Link href={item.url}>
                                                 <Icon className="!size-5 group-data-[collapsible=icon]:!size-4" />
@@ -260,14 +246,12 @@ export function AppSidebar() {
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
-
             </SidebarContent>
 
             {/* ADMINISTRACIÓN DEL USUARIO */}
-            <SidebarFooter className="mt-auto border-t border-white/10 bg-[#10242F] px-4 py-4 group-data-[collapsible=icon]:px-2">
+            <SidebarFooter className="mt-auto border-t border-sidebar-border px-4 py-4 group-data-[collapsible=icon]:px-2">
                 <NavUser />
             </SidebarFooter>
-
         </Sidebar>
     );
 }

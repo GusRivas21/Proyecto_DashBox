@@ -16,13 +16,11 @@ class ZoneSeeder extends Seeder
         $zones = [
             [
                 'department' => 'San Salvador',
-                'district' => 'San Salvador',
-                'is_active' => true,
+                'district' => 'San Salvador'
             ],
             [
                 'department' => 'La Libertad',
-                'district' => 'Santa Tecla',
-                'is_active' => true,
+                'district' => 'Santa Tecla'
             ],
             [
                 'department' => 'Santa Ana',
@@ -31,8 +29,7 @@ class ZoneSeeder extends Seeder
             ],
             [
                 'department' => 'San Miguel',
-                'district' => 'San Miguel',
-                'is_active' => true,
+                'district' => 'San Miguel'
             ],
         ];
 
@@ -41,9 +38,6 @@ class ZoneSeeder extends Seeder
                 [
                     'department' => $zone['department'],
                     'district' => $zone['district'],
-                ],
-                [
-                    'is_active' => $zone['is_active'],
                 ]
             );
         }

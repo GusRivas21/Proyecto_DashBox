@@ -9,8 +9,7 @@ class Zone extends Model
 {
     protected $fillable = [
         'department',
-        'district',
-        'is_active',
+        'district'
     ];
 
     protected function casts(): array

@@ -104,6 +104,7 @@ class RolePermissionSeeder extends Seeder
         $administrator->syncPermissions([
             'dashboard.view',
             'companies.view',
+            'companies.create',
             'managers.view',
             'reports.view',
             'emergency.view',

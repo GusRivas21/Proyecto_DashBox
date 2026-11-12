@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('department', 80);
             $table->string('district', 80);
-            $table->boolean('is_active')->default(true);
             $table->unique(['department', 'district']);
             $table->timestamps();
         });

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\CompanyController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -11,6 +12,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+    Route::resource('companies', CompanyController::class)
+        ->only(['index', 'create', 'store']);
 });
 
 require __DIR__.'/settings.php';

@@ -9,15 +9,11 @@ class Zone extends Model
 {
     protected $fillable = [
         'department',
-        'district'
+        'municipality',
+        'district',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'is_active' => 'boolean',
-        ];
-    }
+
 
     public function companies(): HasMany
     {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCompanyRequest;
+use Illuminate\Http\Request;
 use App\Models\Company;
 use App\Models\Zone;
 use App\Services\CompanyService;
@@ -22,25 +23,28 @@ class CompanyController extends Controller implements HasMiddleware
             new Middleware('can:companies.create', only: ['create', 'store']),
         ];
     }
-    public function index()
+    public function index(Request $request, CompanyService $service)
     {
-        $companies = Company::with(['zone:id,department,district', 'user:id,email'])
-        ->latest()
-        ->paginate(10)
-        ->through(fn ($company) => [
-            'id'         => $company->id,
-            'name'       => $company->name,
-            'legal_name' => $company->legal_name,
-            'tax_id'     => $company->tax_id,
-            'phone'      => $company->phone,
-            'email'      => $company->user?->email,
-            'zone'       => $company->zone
-                ? "{$company->zone->district} ({$company->zone->department})"
-                : null,
-        ]);
+        $filters = [
+            'search' => trim((string) $request->query('search', '')),
+            'status' => in_array($request->query('status'), ['active', 'inactive'])
+                ? $request->query('status')
+                : 'all',
+        ];
+
+        $companies = $service->paginate($filters)
+            ->withQueryString()
+            ->through(fn ($c) => [
+                'id'     => $c->id,
+                'name'   => $c->name,
+                'tax_id' => $c->tax_id,
+                'zone'   => $c->zone?->district,
+                'active' => $c->deleted_at === null,
+            ]);
 
         return Inertia::render('companies/index', [
             'companies' => $companies,
+            'filters'   => $filters,
         ]);
     }
 
@@ -50,8 +54,10 @@ class CompanyController extends Controller implements HasMiddleware
     public function create()
     {
         return Inertia::render('companies/create', [
-            'zones' => Zone::orderBy('department')->orderBy('district')
-                ->get(['id', 'department', 'district']),
+            'zones' => Zone::orderBy('department')
+            ->orderBy('municipality')
+            ->orderBy('district')
+            ->get(['id', 'department', 'municipality', 'district']),
         ]);
     }
 

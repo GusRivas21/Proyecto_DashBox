@@ -31,22 +31,20 @@ class StoreCompanyRequest extends FormRequest
             'legal_name' => ['required', 'string', 'max:150'],
             'tax_id'     => ['required', 'string', 'max:20', Rule::unique('companies', 'tax_id')],
             'email'      => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+            'password'   => ['required', 'string', 'min:8'],
             'phone'      => ['required', 'regex:/^[0-9\-\+\s]{8,20}$/'],
-            'zone_id'    => [
-                'required',
-                'integer',
-                Rule::exists('zones', 'id')->where('status', 'activo'),
-            ],
+            'zone_id'    => ['required', 'integer', 'exists:zones,id'],
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'name'       => 'nombre',
+            'name'       => 'nombre comercial',
             'legal_name' => 'razón social',
-            'tax_id'     => 'NIT / documento',
+            'tax_id'     => 'NIT',
             'email'      => 'correo',
+            'password'   => 'contraseña',
             'phone'      => 'teléfono',
             'zone_id'    => 'distrito',
         ];
@@ -56,11 +54,12 @@ class StoreCompanyRequest extends FormRequest
     {
         return [
             'required'       => 'El campo :attribute es obligatorio.',
-            'tax_id.unique'  => 'Este NIT / documento ya pertenece a otra empresa.',
+            'tax_id.unique'  => 'Este NIT ya pertenece a otra empresa.',
             'email.email'    => 'Ingresa un correo válido, por ejemplo empresa@ejemplo.com.',
             'email.unique'   => 'Este correo ya está registrado en el sistema.',
+            'password.min'   => 'La contraseña debe tener al menos 8 caracteres.',
             'phone.regex'    => 'El teléfono solo debe contener números (8 a 20 dígitos).',
-            'zone_id.exists' => 'El distrito seleccionado no es válido o está inactivo.',
+            'zone_id.exists' => 'El distrito seleccionado no es válido.',
         ];
     }
 }

@@ -11,8 +11,9 @@ return new class extends Migration
         Schema::create('zones', function (Blueprint $table) {
             $table->id();
             $table->string('department', 80);
+            $table->string('municipality', 80);
             $table->string('district', 80);
-            $table->unique(['department', 'district']);
+            $table->unique(['department', 'municipality', 'district'], 'zones_hierarchy_unique');
             $table->timestamps();
         });
     }

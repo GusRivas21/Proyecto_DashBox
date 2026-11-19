@@ -13,12 +13,20 @@ import type { Paginated } from '@/types/pagination';
 type Company = {
     id: number;
     name: string;
+    legal_name: string;
     tax_id: string;
+    phone: string;
+    active: boolean;
+
+    user: {
+        name: string;
+        email: string;
+    } | null;
+
     zone: {
         department: string;
         district: string;
     } | null;
-    active: boolean;
 };
 
 type StatusFilter = 'all' | 'active' | 'inactive';
@@ -34,11 +42,9 @@ export default function CompaniesIndex() {
     const { companies, filters, flash, auth } = usePage<PageProps>().props;
     const permissions = auth.user?.permissions ?? [];
     const canCreate = permissions.includes('companies.create');
-    const canUpdate = permissions.includes('companies.update');
+    const canUpdate = permissions.includes('companies.edit');
     const canDeactivate = permissions.includes('companies.deactivate');
-
-    const { search, setSearch, status, setStatus, hasFilters } =
-        useListFilters<StatusFilter>('/companies', filters);
+    const { search, setSearch, status, setStatus, hasFilters } = useListFilters<StatusFilter>('/companies', filters);
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Empresas', href: '/companies' }]}>
@@ -98,15 +104,18 @@ export default function CompaniesIndex() {
                             <thead>
                                 <tr>
                                     <th>Empresa</th>
-                                    <th>Distrito</th>
+                                    <th>NIT</th>
+                                    <th>Contacto</th>
+                                    <th>Ubicación</th>
                                     <th>Cuenta</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
+
                             <tbody>
                                 {companies.data.length === 0 && (
                                     <tr>
-                                        <td colSpan={4} className="empty">
+                                        <td colSpan={6} className="empty">
                                             {hasFilters
                                                 ? 'No se encontraron empresas con esos filtros.'
                                                 : 'Aún no hay empresas registradas.'}
@@ -116,22 +125,42 @@ export default function CompaniesIndex() {
 
                                 {companies.data.map((c) => (
                                     <tr key={c.id}>
+                                        {/* Empresa */}
                                         <td>
                                             <div className="font-semibold">{c.name}</div>
-                                            <div className="text-xs text-muted-foreground">{c.tax_id}</div>
+                                            <div className="text-xs text-muted-foreground">
+                                                {c.legal_name}
+                                            </div>
                                         </td>
+
+                                        {/* NIT */}
+                                        <td>{c.tax_id}</td>
+
+                                        {/* Contacto */}
+                                        <td>
+                                            <div>{c.user?.email ?? '—'}</div>
+                                            <div className="text-xs text-muted-foreground">
+                                                {c.phone}
+                                            </div>
+                                        </td>
+
+                                        {/* Ubicación */}
                                         <td>
                                             {c.zone ? (
-                                                <div>
-                                                    <div className="font-medium">{c.zone.district}</div>
+                                                <>
+                                                    <div className="font-medium">
+                                                        {c.zone.district}
+                                                    </div>
                                                     <div className="text-xs text-muted-foreground">
                                                         {c.zone.department}
                                                     </div>
-                                                </div>
+                                                </>
                                             ) : (
                                                 '—'
                                             )}
                                         </td>
+
+                                        {/* Estado */}
                                         <td>
                                             <span
                                                 className={
@@ -143,12 +172,20 @@ export default function CompaniesIndex() {
                                                 {c.active ? 'Activa' : 'Inactiva'}
                                             </span>
                                         </td>
+
+                                        {/* Acciones */}
                                         <td>
                                             <RowActions
                                                 viewHref={`/companies/${c.id}`}
-                                                editHref={canUpdate ? `/companies/${c.id}/edit` : undefined}
+                                                editHref={
+                                                    canUpdate
+                                                        ? `/companies/${c.id}/edit`
+                                                        : undefined
+                                                }
                                                 deleteHref={
-                                                    c.active && canDeactivate ? `/companies/${c.id}` : undefined
+                                                    c.active && canDeactivate
+                                                        ? `/companies/${c.id}`
+                                                        : undefined
                                                 }
                                                 confirmMessage="¿Dar de baja esta empresa? Su historial se conserva."
                                             />

@@ -23,6 +23,7 @@ class CompanyController extends Controller implements HasMiddleware
             new Middleware('can:companies.create', only: ['create', 'store']),
         ];
     }
+
     public function index(Request $request, CompanyService $service)
     {
         $filters = [
@@ -35,13 +36,22 @@ class CompanyController extends Controller implements HasMiddleware
         $companies = $service->paginate($filters)
             ->withQueryString()
             ->through(fn ($c) => [
-                'id'     => $c->id,
-                'name'   => $c->name,
-                'tax_id' => $c->tax_id,
+                'id'         => $c->id,
+                'name'       => $c->name,
+                'legal_name' => $c->legal_name,
+                'tax_id'     => $c->tax_id,
+                'phone'      => $c->phone,
+
+                'user' => $c->user ? [
+                    'name'  => $c->user->name,
+                    'email' => $c->user->email,
+                ] : null,
+
                 'zone' => $c->zone ? [
                     'department' => $c->zone->department,
-                    'district' => $c->zone->district,
+                    'district'   => $c->zone->district,
                 ] : null,
+
                 'active' => $c->deleted_at === null,
             ]);
 
@@ -58,7 +68,6 @@ class CompanyController extends Controller implements HasMiddleware
     {
         return Inertia::render('companies/create', [
             'zones' => Zone::orderBy('department')
-            ->orderBy('municipality')
             ->orderBy('district')
             ->get(['id', 'department','district']),
         ]);

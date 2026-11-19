@@ -18,7 +18,7 @@ class CompanyService
             $user = User::create([
                 'name'     => $data['name'],
                 'email'    => $data['email'],
-                'password' => $data['password'], // el cast 'hashed' del modelo la encripta
+                'password' => $data['password'], 
             ]);
             $user->assignRole('company');
 

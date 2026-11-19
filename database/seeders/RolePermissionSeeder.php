@@ -45,6 +45,10 @@ class RolePermissionSeeder extends Seeder
             'companies.edit',
             'companies.deactivate',
 
+            //Contracts
+            'contracts.view',
+            'contracts.create',
+
             // Transporters
             'transporters.view',
             'transporters.create',
@@ -109,6 +113,8 @@ class RolePermissionSeeder extends Seeder
             'reports.view',
             'emergency.view',
             'audit.view',
+            'contracts.view',
+            'contracts.create'
         ]);
 
         // MANAGER

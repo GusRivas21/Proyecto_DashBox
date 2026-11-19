@@ -14,11 +14,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
-    Route::resource('companies', CompanyController::class)
-        ->only(['index', 'create', 'store']);
+    Route::resource('companies', CompanyController::class);
     Route::resource('managers', ManagerController::class)
         ->only(['index', 'create', 'store']);
-    Route::resource('contracts', ContractController::class)->only(['index', 'create', 'store']);
+    Route::resource('contracts', ContractController::class);
 });
 
 require __DIR__.'/settings.php';

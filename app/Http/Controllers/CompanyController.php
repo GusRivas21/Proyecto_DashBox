@@ -78,14 +78,26 @@ class CompanyController extends Controller implements HasMiddleware
      */
     public function store(StoreCompanyRequest $request, CompanyService $service)
     {
-        $service->register([
-            ...$request->validated(),
-            'administrator_id' => $request->user()->id,
-        ]);
+        try {
+            $service->register([
+                ...$request->validated(),
+                'administrator_id' => $request->user()->id,
+            ]);
 
-        return redirect()->route('companies.index')->with('success', 'Empresa registrada correctamente.');
+            return redirect()
+                ->route('companies.index')
+                ->with('success', 'Empresa registrada correctamente.');
+
+        } catch (\Exception $e) {
+
+            report($e);
+
+            return redirect()
+                ->back()
+                ->with('error', 'No se pudo registrar la empresa. Inténtalo nuevamente.')
+                ->withInput();
+        }
     }
-
     /**
      * Display the specified resource.
      */
@@ -113,8 +125,12 @@ class CompanyController extends Controller implements HasMiddleware
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(int $company, CompanyService $companyService)
     {
-        //
+        $companyService->deactivate($company);
+
+        return redirect()
+            ->route('companies.index')
+            ->with('success', 'Empresa desactivada correctamente.');
     }
 }

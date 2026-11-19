@@ -34,7 +34,10 @@ type StatusFilter = 'all' | 'active' | 'inactive';
 type PageProps = {
     companies: Paginated<Company>;
     filters: { search: string; status: StatusFilter };
-    flash?: { success?: string | null };
+    flash?: {
+        success?: string | null;
+        error?: string | null;
+    };
     auth: { user: { permissions: string[] } | null };
 };
 
@@ -62,7 +65,15 @@ export default function CompaniesIndex() {
                     )}
                 </PageHeader>
 
-                <FlashMessage message={flash?.success} />
+                <FlashMessage
+                    message={flash?.success}
+                    type="success"
+                />
+
+                <FlashMessage
+                    message={flash?.error}
+                    type="error"
+                />
 
                 {/* Filtros */}
                 <div className="flex flex-wrap gap-4">
@@ -187,7 +198,9 @@ export default function CompaniesIndex() {
                                                         ? `/companies/${c.id}`
                                                         : undefined
                                                 }
-                                                confirmMessage="¿Dar de baja esta empresa? Su historial se conserva."
+                                                confirmTitle="¿Dar de baja a la empresa?"
+                                                confirmMessage="Al dar de baja esta empresa, también se desactivará la cuenta de su usuario asociado. Sus contratos, destinatarios y envíos se conservarán. No se eliminará el historial."
+                                                confirmButtonText="Confirmar baja"
                                             />
                                         </td>
                                     </tr>

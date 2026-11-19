@@ -45,4 +45,20 @@ class CompanyService
             ->orderBy('name')
             ->paginate($perPage);
     }
+
+
+    public function deactivate(int $id): void
+    {
+        DB::transaction(function () use ($id) {
+
+            $company = Company::query()->findOrFail($id);
+
+            $user = $company->user()->firstOrFail();
+
+            $company->delete();
+
+            $user->delete();
+        });
+    }
+
 }

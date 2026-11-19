@@ -12,9 +12,9 @@ type CompanyOption = { id: number; name: string; tax_id: string };
 
 type ContractForm = {
     company_id: string;
+    amount: string;
     start_date: string;
     end_date: string;
-    amount: string;
 };
 
 const selectClass =
@@ -23,9 +23,9 @@ const selectClass =
 export default function CreateContract({ companies }: { companies: CompanyOption[] }) {
     const { data, setData, post, processing, errors } = useForm<ContractForm>({
         company_id: '',
+        amount: '',
         start_date: '',
         end_date: '',
-        amount: '',
     });
 
     const submit = (e: FormEvent) => {
@@ -57,10 +57,16 @@ export default function CreateContract({ companies }: { companies: CompanyOption
 
                 <form onSubmit={submit} noValidate className="w-full rounded-xl border bg-card p-8">
                     <h2 className="text-base font-semibold">Datos del contrato</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        Selecciona la empresa e indica el monto y la vigencia.
+                    </p>
 
-                    <div className="mt-6 grid gap-x-6 gap-y-6 md:grid-cols-2 xl:grid-cols-3">
+                    <div className="mt-6 grid gap-x-8 gap-y-6 md:grid-cols-2">
+                        {/* Fila 1 */}
                         <div className="grid content-start gap-2">
-                            <Label htmlFor="company_id" className="text-sm">Empresa {required}</Label>
+                            <Label htmlFor="company_id" className="text-sm">
+                                Empresa {required}
+                            </Label>
                             <select
                                 id="company_id"
                                 value={data.company_id}
@@ -79,33 +85,9 @@ export default function CreateContract({ companies }: { companies: CompanyOption
                         </div>
 
                         <div className="grid content-start gap-2">
-                            <Label htmlFor="start_date" className="text-sm">Fecha de inicio {required}</Label>
-                            <Input
-                                id="start_date"
-                                type="date"
-                                value={data.start_date}
-                                onChange={(e) => setData('start_date', e.target.value)}
-                                aria-invalid={!!errors.start_date}
-                                className="h-11"
-                            />
-                            <InputError message={errors.start_date} />
-                        </div>
-
-                        <div className="grid content-start gap-2">
-                            <Label htmlFor="end_date" className="text-sm">Fecha de vencimiento {required}</Label>
-                            <Input
-                                id="end_date"
-                                type="date"
-                                value={data.end_date}
-                                onChange={(e) => setData('end_date', e.target.value)}
-                                aria-invalid={!!errors.end_date}
-                                className="h-11"
-                            />
-                            <InputError message={errors.end_date} />
-                        </div>
-
-                        <div className="grid content-start gap-2">
-                            <Label htmlFor="amount" className="text-sm">Monto (USD) {required}</Label>
+                            <Label htmlFor="amount" className="text-sm">
+                                Monto (USD) {required}
+                            </Label>
                             <Input
                                 id="amount"
                                 type="number"
@@ -119,9 +101,40 @@ export default function CreateContract({ companies }: { companies: CompanyOption
                             />
                             <InputError message={errors.amount} />
                         </div>
+
+                        {/* Fila 2 */}
+                        <div className="grid content-start gap-2">
+                            <Label htmlFor="start_date" className="text-sm">
+                                Fecha de inicio {required}
+                            </Label>
+                            <Input
+                                id="start_date"
+                                type="date"
+                                value={data.start_date}
+                                onChange={(e) => setData('start_date', e.target.value)}
+                                aria-invalid={!!errors.start_date}
+                                className="h-11"
+                            />
+                            <InputError message={errors.start_date} />
+                        </div>
+
+                        <div className="grid content-start gap-2">
+                            <Label htmlFor="end_date" className="text-sm">
+                                Fecha de vencimiento {required}
+                            </Label>
+                            <Input
+                                id="end_date"
+                                type="date"
+                                value={data.end_date}
+                                onChange={(e) => setData('end_date', e.target.value)}
+                                aria-invalid={!!errors.end_date}
+                                className="h-11"
+                            />
+                            <InputError message={errors.end_date} />
+                        </div>
                     </div>
 
-                    <p className="mt-5 text-xs text-muted-foreground">
+                    <p className="mt-6 text-xs text-muted-foreground">
                         El contrato se registra como vigente y pasa a vencido automáticamente al cumplirse su fecha de vencimiento.
                     </p>
 

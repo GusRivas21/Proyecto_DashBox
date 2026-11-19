@@ -15,6 +15,7 @@ class Manager extends Model
     protected $keyType = 'int';
 
     protected $fillable = [
+        'id',
         'administrator_id',
         'zone_id',
         'first_name',

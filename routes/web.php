@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\ManagerController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -13,6 +14,8 @@ Route::middleware(['auth'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
     Route::resource('companies', CompanyController::class)
+        ->only(['index', 'create', 'store']);
+    Route::resource('managers', ManagerController::class)
         ->only(['index', 'create', 'store']);
 });
 

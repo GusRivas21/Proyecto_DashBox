@@ -106,6 +106,7 @@ class RolePermissionSeeder extends Seeder
             'companies.view',
             'companies.create',
             'managers.view',
+            'managers.create',
             'reports.view',
             'emergency.view',
             'audit.view',

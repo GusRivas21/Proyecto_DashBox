@@ -31,6 +31,7 @@ import {
     Package,
     ContactRound,
     PackageCheck,
+    FileText
 } from 'lucide-react';
 
 type SidebarNavItem = {
@@ -60,6 +61,12 @@ const mainNavItems: SidebarNavItem[] = [
         url: '/companies',
         icon: Building2,
         permission: 'companies.view',
+    },
+    {
+        title: 'Contratos',
+        url: '/contracts',
+        icon: FileText,
+        permission: 'contracts.view',
     },
     {
         title: 'Gerentes',
@@ -127,6 +134,7 @@ const mainNavItems: SidebarNavItem[] = [
         icon: PackageCheck,
         permission: 'deliveries.view',
     },
+    
 ];
 
 const navButtonClass = `

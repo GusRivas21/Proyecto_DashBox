@@ -12,90 +12,149 @@ class ZoneSeeder extends Seeder
      */
     public function run(): void
     {
-        $territories = [
+        $departments = [
             'Ahuachapán' => [
-                'Ahuachapán Norte' => ['Atiquizaya', 'El Refugio', 'San Lorenzo', 'Turín'],
-                'Ahuachapán Centro' => ['Ahuachapán', 'Apaneca', 'Concepción de Ataco', 'Tacuba'],
-                'Ahuachapán Sur' => ['Guaymango', 'Jujutla', 'San Francisco Menéndez', 'San Pedro Puxtla'],
+                'Atiquizaya', 'El Refugio', 'San Lorenzo', 'Turín',
+                'Ahuachapán', 'Apaneca', 'Concepción de Ataco', 'Tacuba',
+                'Guaymango', 'Jujutla', 'San Francisco Menéndez',
+                'San Pedro Puxtla',
             ],
+
             'Santa Ana' => [
-                'Santa Ana Norte' => ['Masahuat', 'Metapán', 'Santa Rosa Guachipilín', 'Texistepeque'],
-                'Santa Ana Centro' => ['Santa Ana'],
-                'Santa Ana Este' => ['Coatepeque', 'El Congo'],
-                'Santa Ana Oeste' => ['Candelaria de la Frontera', 'Chalchuapa', 'El Porvenir', 'San Antonio Pajonal', 'San Sebastián Salitrillo', 'Santiago de la Frontera'],
+                'Masahuat', 'Metapán', 'Santa Rosa Guachipilín',
+                'Texistepeque', 'Santa Ana', 'Coatepeque', 'El Congo',
+                'Candelaria de la Frontera', 'Chalchuapa', 'El Porvenir',
+                'San Antonio Pajonal', 'San Sebastián Salitrillo',
+                'Santiago de la Frontera',
             ],
+
             'Sonsonate' => [
-                'Sonsonate Norte' => ['Juayúa', 'Nahuizalco', 'Salcoatitán', 'Santa Catarina Masahuat'],
-                'Sonsonate Centro' => ['Nahulingo', 'San Antonio del Monte', 'Santo Domingo de Guzmán', 'Sonsonate', 'Sonzacate'],
-                'Sonsonate Este' => ['Armenia', 'Caluco', 'Cuisnahuat', 'Izalco', 'San Julián', 'Santa Isabel Ishuatán'],
-                'Sonsonate Oeste' => ['Acajutla'],
+                'Juayúa', 'Nahuizalco', 'Salcoatitán',
+                'Santa Catarina Masahuat', 'Nahulingo',
+                'San Antonio del Monte', 'Santo Domingo de Guzmán',
+                'Sonsonate', 'Sonzacate', 'Armenia', 'Caluco',
+                'Cuisnahuat', 'Izalco', 'San Julián',
+                'Santa Isabel Ishuatán', 'Acajutla',
             ],
+
             'Chalatenango' => [
-                'Chalatenango Norte' => ['Citalá', 'La Palma', 'San Ignacio'],
-                'Chalatenango Centro' => ['Agua Caliente', 'Dulce Nombre de María', 'El Paraíso', 'La Reina', 'Nueva Concepción', 'San Fernando', 'San Francisco Morazán', 'San Rafael', 'Santa Rita', 'Tejutla'],
-                'Chalatenango Sur' => ['Arcatao', 'Azacualpa', 'Cancasque', 'Chalatenango', 'Comalapa', 'Concepción Quezaltepeque', 'El Carrizal', 'La Laguna', 'Las Vueltas', 'Las Flores', 'Nombre de Jesús', 'Nueva Trinidad', 'Ojos de Agua', 'Potonico', 'San Antonio de la Cruz', 'San Antonio Los Ranchos', 'San Francisco Lempa', 'San Isidro Labrador', 'San Luis del Carmen', 'San Miguel de Mercedes'],
+                'Citalá', 'La Palma', 'San Ignacio',
+                'Agua Caliente', 'Dulce Nombre de María', 'El Paraíso',
+                'La Reina', 'Nueva Concepción', 'San Fernando',
+                'San Francisco Morazán', 'San Rafael', 'Santa Rita',
+                'Tejutla', 'Arcatao', 'Azacualpa', 'Cancasque',
+                'Chalatenango', 'Comalapa', 'Concepción Quezaltepeque',
+                'El Carrizal', 'La Laguna', 'Las Vueltas', 'Las Flores',
+                'Nombre de Jesús', 'Nueva Trinidad', 'Ojos de Agua',
+                'Potonico', 'San Antonio de la Cruz',
+                'San Antonio Los Ranchos', 'San Francisco Lempa',
+                'San Isidro Labrador', 'San Luis del Carmen',
+                'San Miguel de Mercedes',
             ],
+
             'La Libertad' => [
-                'La Libertad Norte' => ['Quezaltepeque', 'San Matías', 'San Pablo Tacachico'],
-                'La Libertad Centro' => ['Ciudad Arce', 'San Juan Opico'],
-                'La Libertad Oeste' => ['Colón', 'Jayaque', 'Sacacoyo', 'Talnique', 'Tepecoyo'],
-                'La Libertad Este' => ['Antiguo Cuscatlán', 'Huizúcar', 'Nuevo Cuscatlán', 'San José Villanueva', 'Zaragoza'],
-                'La Libertad Costa' => ['Chiltiupán', 'Jicalapa', 'La Libertad', 'Tamanique', 'Teotepeque'],
-                'La Libertad Sur' => ['Comasagua', 'Santa Tecla'],
+                'Quezaltepeque', 'San Matías', 'San Pablo Tacachico',
+                'Ciudad Arce', 'San Juan Opico', 'Colón', 'Jayaque',
+                'Sacacoyo', 'Talnique', 'Tepecoyo',
+                'Antiguo Cuscatlán', 'Huizúcar', 'Nuevo Cuscatlán',
+                'San José Villanueva', 'Zaragoza', 'Chiltiupán',
+                'Jicalapa', 'La Libertad', 'Tamanique', 'Teotepeque',
+                'Comasagua', 'Santa Tecla',
             ],
+
             'San Salvador' => [
-                'San Salvador Norte' => ['Aguilares', 'El Paisnal', 'Guazapa'],
-                'San Salvador Oeste' => ['Apopa', 'Nejapa'],
-                'San Salvador Este' => ['Ilopango', 'San Martín', 'Soyapango', 'Tonacatepeque'],
-                'San Salvador Centro' => ['Ayutuxtepeque', 'Cuscatancingo', 'Ciudad Delgado', 'Mejicanos', 'San Salvador'],
-                'San Salvador Sur' => ['Panchimalco', 'Rosario de Mora', 'San Marcos', 'Santiago Texacuangos', 'Santo Tomás'],
+                'Aguilares', 'El Paisnal', 'Guazapa', 'Apopa', 'Nejapa',
+                'Ilopango', 'San Martín', 'Soyapango', 'Tonacatepeque',
+                'Ayutuxtepeque', 'Cuscatancingo', 'Ciudad Delgado',
+                'Mejicanos', 'San Salvador', 'Panchimalco',
+                'Rosario de Mora', 'San Marcos',
+                'Santiago Texacuangos', 'Santo Tomás',
             ],
+
             'Cuscatlán' => [
-                'Cuscatlán Norte' => ['Oratorio de Concepción', 'San Bartolomé Perulapía', 'San José Guayabal', 'San Pedro Perulapán', 'Suchitoto'],
-                'Cuscatlán Sur' => ['Candelaria', 'Cojutepeque', 'El Carmen', 'El Rosario', 'Monte San Juan', 'San Cristóbal', 'San Rafael Cedros', 'San Ramón', 'Santa Cruz Analquito', 'Santa Cruz Michapa', 'Tenancingo'],
+                'Oratorio de Concepción', 'San Bartolomé Perulapía',
+                'San José Guayabal', 'San Pedro Perulapán', 'Suchitoto',
+                'Candelaria', 'Cojutepeque', 'El Carmen', 'El Rosario',
+                'Monte San Juan', 'San Cristóbal', 'San Rafael Cedros',
+                'San Ramón', 'Santa Cruz Analquito',
+                'Santa Cruz Michapa', 'Tenancingo',
             ],
+
             'La Paz' => [
-                'La Paz Oeste' => ['Cuyultitán', 'Olocuilta', 'San Juan Talpa', 'San Luis Talpa', 'San Pedro Masahuat', 'Tapalhuaca', 'San Francisco Chinameca'],
-                'La Paz Centro' => ['El Rosario', 'Jerusalén', 'Mercedes La Ceiba', 'Paraíso de Osorio', 'San Antonio Masahuat', 'San Emigdio', 'San Juan Tepezontes', 'San Luis La Herradura', 'San Miguel Tepezontes', 'San Pedro Nonualco', 'Santa María Ostuma', 'Santiago Nonualco'],
-                'La Paz Este' => ['San Juan Nonualco', 'San Rafael Obrajuelo', 'Zacatecoluca'],
+                'Cuyultitán', 'Olocuilta', 'San Juan Talpa',
+                'San Luis Talpa', 'San Pedro Masahuat', 'Tapalhuaca',
+                'San Francisco Chinameca', 'El Rosario', 'Jerusalén',
+                'Mercedes La Ceiba', 'Paraíso de Osorio',
+                'San Antonio Masahuat', 'San Emigdio',
+                'San Juan Tepezontes', 'San Luis La Herradura',
+                'San Miguel Tepezontes', 'San Pedro Nonualco',
+                'Santa María Ostuma', 'Santiago Nonualco',
+                'San Juan Nonualco', 'San Rafael Obrajuelo',
+                'Zacatecoluca',
             ],
+
             'Cabañas' => [
-                'Cabañas Este' => ['Dolores', 'Guacotecti', 'San Isidro', 'Sensuntepeque', 'Victoria'],
-                'Cabañas Oeste' => ['Cinquera', 'Ilobasco', 'Jutiapa', 'Tejutepeque'],
+                'Dolores', 'Guacotecti', 'San Isidro',
+                'Sensuntepeque', 'Victoria', 'Cinquera',
+                'Ilobasco', 'Jutiapa', 'Tejutepeque',
             ],
+
             'San Vicente' => [
-                'San Vicente Norte' => ['Apastepeque', 'San Esteban Catarina', 'San Ildefonso', 'San Lorenzo', 'San Sebastián', 'Santa Clara', 'Santo Domingo'],
-                'San Vicente Sur' => ['Guadalupe', 'San Cayetano Istepeque', 'San Vicente', 'Tecoluca', 'Tepetitán', 'Verapaz'],
+                'Apastepeque', 'San Esteban Catarina',
+                'San Ildefonso', 'San Lorenzo', 'San Sebastián',
+                'Santa Clara', 'Santo Domingo', 'Guadalupe',
+                'San Cayetano Istepeque', 'San Vicente', 'Tecoluca',
+                'Tepetitán', 'Verapaz',
             ],
+
             'Usulután' => [
-                'Usulután Norte' => ['Alegría', 'Berlín', 'El Triunfo', 'Estanzuelas', 'Jucuapa', 'Mercedes Umaña', 'Nueva Granada', 'San Buenaventura', 'Santiago de María'],
-                'Usulután Este' => ['California', 'Concepción Batres', 'Ereguayquín', 'Jucuarán', 'Ozatlán', 'San Dionisio', 'Santa Elena', 'Santa María', 'Tecapán', 'Usulután'],
-                'Usulután Oeste' => ['Jiquilisco', 'Puerto El Triunfo', 'San Agustín', 'San Francisco Javier'],
+                'Alegría', 'Berlín', 'El Triunfo', 'Estanzuelas',
+                'Jucuapa', 'Mercedes Umaña', 'Nueva Granada',
+                'San Buenaventura', 'Santiago de María',
+                'California', 'Concepción Batres', 'Ereguayquín',
+                'Jucuarán', 'Ozatlán', 'San Dionisio', 'Santa Elena',
+                'Santa María', 'Tecapán', 'Usulután', 'Jiquilisco',
+                'Puerto El Triunfo', 'San Agustín',
+                'San Francisco Javier',
             ],
+
             'San Miguel' => [
-                'San Miguel Norte' => ['Carolina', 'Chapeltique', 'Ciudad Barrios', 'Nuevo Edén de San Juan', 'San Antonio', 'San Gerardo', 'San Luis de la Reina', 'Sesori'],
-                'San Miguel Centro' => ['Chirilagua', 'Comacarán', 'Moncagua', 'Quelepa', 'San Miguel', 'Uluazapa'],
-                'San Miguel Oeste' => ['Chinameca', 'El Tránsito', 'Lolotique', 'Nueva Guadalupe', 'San Jorge', 'San Rafael Oriente'],
+                'Carolina', 'Chapeltique', 'Ciudad Barrios',
+                'Nuevo Edén de San Juan', 'San Antonio',
+                'San Gerardo', 'San Luis de la Reina', 'Sesori',
+                'Chirilagua', 'Comacarán', 'Moncagua', 'Quelepa',
+                'San Miguel', 'Uluazapa', 'Chinameca', 'El Tránsito',
+                'Lolotique', 'Nueva Guadalupe', 'San Jorge',
+                'San Rafael Oriente',
             ],
+
             'Morazán' => [
-                'Morazán Norte' => ['Arambala', 'Cacaopera', 'Corinto', 'El Rosario', 'Joateca', 'Jocoaitique', 'Meanguera', 'Perquín', 'San Fernando', 'San Isidro', 'Torola'],
-                'Morazán Sur' => ['Chilanga', 'Delicias de Concepción', 'El Divisadero', 'Gualococti', 'Guatajiagua', 'Jocoro', 'Lolotiquillo', 'Osicala', 'San Carlos', 'San Francisco Gotera', 'San Simón', 'Sensembra', 'Sociedad', 'Yamabal', 'Yoloaiquín'],
+                'Arambala', 'Cacaopera', 'Corinto', 'El Rosario',
+                'Joateca', 'Jocoaitique', 'Meanguera', 'Perquín',
+                'San Fernando', 'San Isidro', 'Torola', 'Chilanga',
+                'Delicias de Concepción', 'El Divisadero',
+                'Gualococti', 'Guatajiagua', 'Jocoro',
+                'Lolotiquillo', 'Osicala', 'San Carlos',
+                'San Francisco Gotera', 'San Simón', 'Sensembra',
+                'Sociedad', 'Yamabal', 'Yoloaiquín',
             ],
+
             'La Unión' => [
-                'La Unión Norte' => ['Anamorós', 'Bolívar', 'Concepción de Oriente', 'El Sauce', 'Lislique', 'Nueva Esparta', 'Pasaquina', 'Polorós', 'San José', 'Santa Rosa de Lima'],
-                'La Unión Sur' => ['Conchagua', 'El Carmen', 'Intipucá', 'La Unión', 'Meanguera del Golfo', 'San Alejo', 'Yayantique', 'Yucuaiquín'],
+                'Anamorós', 'Bolívar', 'Concepción de Oriente',
+                'El Sauce', 'Lislique', 'Nueva Esparta', 'Pasaquina',
+                'Polorós', 'San José', 'Santa Rosa de Lima',
+                'Conchagua', 'El Carmen', 'Intipucá', 'La Unión',
+                'Meanguera del Golfo', 'San Alejo', 'Yayantique',
+                'Yucuaiquín',
             ],
         ];
 
-        foreach ($territories as $department => $municipalities) {
-            foreach ($municipalities as $municipality => $districts) {
-                foreach ($districts as $district) {
-                    Zone::firstOrCreate([
-                        'department'   => $department,
-                        'municipality' => $municipality,
-                        'district'     => $district,
-                    ]);
-                }
+        foreach ($departments as $department => $districts) {
+            foreach ($districts as $district) {
+                Zone::firstOrCreate([
+                    'department' => $department,
+                    'district'   => $district,
+                ]);
             }
         }
     }

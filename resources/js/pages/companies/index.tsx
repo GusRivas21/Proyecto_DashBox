@@ -1,24 +1,24 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
+import FlashMessage from '@/components/flash-message';
+import PageHeader from '@/components/page-header';
+import Pagination from '@/components/pagination';
+import RowActions from '@/components/row-actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import useListFilters from '@/hooks/use-list-filters';
 import AppLayout from '@/layouts/app-layout';
+import type { Paginated } from '@/types/pagination';
 
 type Company = {
     id: number;
     name: string;
     tax_id: string;
-    zone: string | null;
+    zone: {
+        department: string;
+        district: string;
+    } | null;
     active: boolean;
-};
-
-type Paginated<T> = {
-    data: T[];
-    current_page: number;
-    last_page: number;
-    prev_page_url: string | null;
-    next_page_url: string | null;
 };
 
 type StatusFilter = 'all' | 'active' | 'inactive';
@@ -34,64 +34,29 @@ export default function CompaniesIndex() {
     const { companies, filters, flash, auth } = usePage<PageProps>().props;
     const permissions = auth.user?.permissions ?? [];
     const canCreate = permissions.includes('companies.create');
+    const canUpdate = permissions.includes('companies.update');
     const canDeactivate = permissions.includes('companies.deactivate');
 
-    const [search, setSearch] = useState(filters.search);
-    const [status, setStatus] = useState<StatusFilter>(filters.status);
-    const firstRender = useRef(true);
-
-    useEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false;
-            return;
-        }
-        const t = setTimeout(() => {
-            router.get(
-                '/companies',
-                {
-                    search: search || undefined,
-                    status: status === 'all' ? undefined : status,
-                },
-                { preserveState: true, preserveScroll: true, replace: true },
-            );
-        }, 300);
-        return () => clearTimeout(t);
-    }, [search, status]);
-
-    const hasFilters = search !== '' || status !== 'all';
+    const { search, setSearch, status, setStatus, hasFilters } =
+        useListFilters<StatusFilter>('/companies', filters);
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Empresas', href: '/companies' }]}>
             <Head title="Empresas" />
 
-            <div className="flex flex-col gap-6 p-6">
-                {/* Encabezado */}
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <p className="text-[11px] font-semibold tracking-widest text-[#1B6272] uppercase dark:text-[#A9C6D3]">
-                            Administración general
-                        </p>
-                        <h1 className="mt-1 text-2xl font-bold tracking-tight">Empresas</h1>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Administra empresas clientes, sus cuentas y su distrito.
-                        </p>
-                    </div>
-
+            <div className="flex flex-col gap-6 p-6 lg:p-8">
+                <PageHeader
+                    title="Empresas"
+                    description="Administra empresas clientes, sus cuentas y su distrito."
+                >
                     {canCreate && (
-                        <Link
-                            href="/companies/create"
-                            className="rounded-md bg-[#1B6272] px-4 py-2 text-sm font-medium text-white hover:bg-[#164E5B]"
-                        >
+                        <Link href="/companies/create" className="btn-brand">
                             Registrar empresa
                         </Link>
                     )}
-                </div>
+                </PageHeader>
 
-                {flash?.success && (
-                    <div className="rounded-md border border-green-200 bg-green-50 px-4 py-2 text-sm font-medium text-green-700">
-                        {flash.success}
-                    </div>
-                )}
+                <FlashMessage message={flash?.success} />
 
                 {/* Filtros */}
                 <div className="flex flex-wrap gap-4">
@@ -115,7 +80,7 @@ export default function CompaniesIndex() {
                             id="status"
                             value={status}
                             onChange={(e) => setStatus(e.target.value as StatusFilter)}
-                            className="h-9 rounded-md border bg-transparent px-3 text-sm"
+                            className="filter-select"
                         >
                             <option value="all">Todas</option>
                             <option value="active">Activas</option>
@@ -129,19 +94,19 @@ export default function CompaniesIndex() {
                     <h2 className="px-5 py-4 text-sm font-semibold">Empresas registradas</h2>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead className="border-y bg-muted/40 text-xs text-muted-foreground">
+                        <table className="data-table">
+                            <thead>
                                 <tr>
-                                    <th className="px-5 py-3 font-medium">Empresa</th>
-                                    <th className="px-5 py-3 font-medium">Distrito</th>
-                                    <th className="px-5 py-3 font-medium">Cuenta</th>
-                                    <th className="px-5 py-3 font-medium">Acción</th>
+                                    <th>Empresa</th>
+                                    <th>Distrito</th>
+                                    <th>Cuenta</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {companies.data.length === 0 && (
                                     <tr>
-                                        <td colSpan={4} className="px-5 py-10 text-center text-muted-foreground">
+                                        <td colSpan={4} className="empty">
                                             {hasFilters
                                                 ? 'No se encontraron empresas con esos filtros.'
                                                 : 'Aún no hay empresas registradas.'}
@@ -150,13 +115,24 @@ export default function CompaniesIndex() {
                                 )}
 
                                 {companies.data.map((c) => (
-                                    <tr key={c.id} className="border-b last:border-0">
-                                        <td className="px-5 py-3">
+                                    <tr key={c.id}>
+                                        <td>
                                             <div className="font-semibold">{c.name}</div>
                                             <div className="text-xs text-muted-foreground">{c.tax_id}</div>
                                         </td>
-                                        <td className="px-5 py-3">{c.zone ?? '—'}</td>
-                                        <td className="px-5 py-3">
+                                        <td>
+                                            {c.zone ? (
+                                                <div>
+                                                    <div className="font-medium">{c.zone.district}</div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {c.zone.department}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                '—'
+                                            )}
+                                        </td>
+                                        <td>
                                             <span
                                                 className={
                                                     c.active
@@ -167,22 +143,15 @@ export default function CompaniesIndex() {
                                                 {c.active ? 'Activa' : 'Inactiva'}
                                             </span>
                                         </td>
-                                        <td className="px-5 py-3">
-                                            {c.active && canDeactivate ? (
-                                                <Link
-                                                    href={`/companies/${c.id}/deactivate`}
-                                                    className="text-[#1B6272] hover:underline dark:text-[#A9C6D3]"
-                                                >
-                                                    Dar de baja
-                                                </Link>
-                                            ) : (
-                                                <Link
-                                                    href={`/companies/${c.id}`}
-                                                    className="text-[#1B6272] hover:underline dark:text-[#A9C6D3]"
-                                                >
-                                                    Consultar
-                                                </Link>
-                                            )}
+                                        <td>
+                                            <RowActions
+                                                viewHref={`/companies/${c.id}`}
+                                                editHref={canUpdate ? `/companies/${c.id}/edit` : undefined}
+                                                deleteHref={
+                                                    c.active && canDeactivate ? `/companies/${c.id}` : undefined
+                                                }
+                                                confirmMessage="¿Dar de baja esta empresa? Su historial se conserva."
+                                            />
                                         </td>
                                     </tr>
                                 ))}
@@ -190,36 +159,12 @@ export default function CompaniesIndex() {
                         </table>
                     </div>
 
-                    {companies.last_page > 1 && (
-                        <div className="flex items-center justify-between border-t px-5 py-3 text-sm">
-                            <span className="text-muted-foreground">
-                                Página {companies.current_page} de {companies.last_page}
-                            </span>
-                            <div className="flex gap-2">
-                                {companies.prev_page_url && (
-                                    <Link
-                                        href={companies.prev_page_url}
-                                        className="rounded-md border px-3 py-1.5 hover:bg-muted"
-                                    >
-                                        Anterior
-                                    </Link>
-                                )}
-                                {companies.next_page_url && (
-                                    <Link
-                                        href={companies.next_page_url}
-                                        className="rounded-md border px-3 py-1.5 hover:bg-muted"
-                                    >
-                                        Siguiente
-                                    </Link>
-                                )}
-                            </div>
-                        </div>
-                    )}
+                    <Pagination page={companies} />
                 </div>
 
                 {/* Aviso de baja lógica */}
-                <div className="rounded-lg border border-[#1B6272]/20 bg-[#1B6272]/5 px-4 py-3 text-sm">
-                    <p className="font-semibold text-[#1B6272] dark:text-[#A9C6D3]">
+                <div className="rounded-lg border border-brand/20 bg-brand/5 px-4 py-3 text-sm">
+                    <p className="font-semibold text-brand dark:text-brand-light">
                         Baja lógica, sin pérdida de historial
                     </p>
                     <p className="mt-0.5 text-muted-foreground">

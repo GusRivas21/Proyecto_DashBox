@@ -9,7 +9,6 @@ class Zone extends Model
 {
     protected $fillable = [
         'department',
-        'municipality',
         'district',
     ];
 

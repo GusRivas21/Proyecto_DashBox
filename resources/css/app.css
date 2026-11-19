@@ -56,6 +56,10 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    --color-brand: #1B6272;
+    --color-brand-dark: #164E5B;
+    --color-brand-light: #A9C6D3;
 }
 
 /*
@@ -154,5 +158,73 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+@layer components {
+    /* Textos y enlaces */
+    .eyebrow {
+        @apply text-[11px] font-semibold tracking-widest text-brand uppercase dark:text-brand-light;
+    }
+
+    .link-brand {
+        @apply text-brand hover:underline dark:text-brand-light;
+    }
+
+    /* Botones */
+    .btn-brand {
+        @apply rounded-md bg-brand px-4 py-2 text-sm font-medium text-white hover:bg-brand-dark;
+    }
+
+    /* Selects */
+    .filter-select {
+        @apply h-9 rounded-md border bg-transparent px-3 text-sm;
+    }
+
+    .form-select {
+        @apply h-11 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    /* Formularios */
+    .form-grid {
+        @apply mt-6 grid gap-x-6 gap-y-6 md:grid-cols-2;
+    }
+
+    .form-field {
+        @apply grid content-start gap-2;
+    }
+
+    /* Tablas */
+    .data-table {
+        @apply w-full text-left text-sm;
+    }
+
+    .data-table thead {
+        @apply border-y bg-muted/40 text-xs text-muted-foreground;
+    }
+
+    .data-table th {
+        @apply px-5 py-3 font-medium;
+    }
+
+    .data-table td {
+        @apply px-5 py-3;
+    }
+
+    .data-table tbody tr {
+        @apply border-b last:border-0;
+    }
+
+    .data-table .empty {
+        @apply py-10 text-center text-muted-foreground;
+    }
+
+    /* Iconos de acción */
+    .icon-action {
+        @apply rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground;
+    }
+
+    .icon-action-danger {
+        @apply rounded-md p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive;
     }
 }

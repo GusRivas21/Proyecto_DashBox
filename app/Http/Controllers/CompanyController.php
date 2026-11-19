@@ -38,7 +38,10 @@ class CompanyController extends Controller implements HasMiddleware
                 'id'     => $c->id,
                 'name'   => $c->name,
                 'tax_id' => $c->tax_id,
-                'zone'   => $c->zone?->district,
+                'zone' => $c->zone ? [
+                    'department' => $c->zone->department,
+                    'district' => $c->zone->district,
+                ] : null,
                 'active' => $c->deleted_at === null,
             ]);
 
@@ -57,7 +60,7 @@ class CompanyController extends Controller implements HasMiddleware
             'zones' => Zone::orderBy('department')
             ->orderBy('municipality')
             ->orderBy('district')
-            ->get(['id', 'department', 'municipality', 'district']),
+            ->get(['id', 'department','district']),
         ]);
     }
 

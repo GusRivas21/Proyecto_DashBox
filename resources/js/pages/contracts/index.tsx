@@ -1,9 +1,14 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
+import FlashMessage from '@/components/flash-message';
+import PageHeader from '@/components/page-header';
+import Pagination from '@/components/pagination';
+import RowActions from '@/components/row-actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import useListFilters from '@/hooks/use-list-filters';
 import AppLayout from '@/layouts/app-layout';
+import type { Paginated } from '@/types/pagination';
 
 type State = 'active' | 'expired' | 'cancelled';
 type StatusFilter = 'all' | State;
@@ -16,14 +21,6 @@ type Contract = {
     end_date: string;
     amount: string;
     status: State;
-};
-
-type Paginated<T> = {
-    data: T[];
-    current_page: number;
-    last_page: number;
-    prev_page_url: string | null;
-    next_page_url: string | null;
 };
 
 type PageProps = {
@@ -50,64 +47,38 @@ const date = (d: string) => d.split('-').reverse().join('/');
 
 export default function ContractsIndex() {
     const { contracts, filters, flash, auth } = usePage<PageProps>().props;
-    const canCreate = auth.user?.permissions.includes('contracts.create');
+    const permissions = auth.user?.permissions ?? [];
+    const canCreate = permissions.includes('contracts.create');
+    const canUpdate = permissions.includes('contracts.update');
+    const canDelete = permissions.includes('contracts.delete');
 
-    const [search, setSearch] = useState(filters.search);
-    const [status, setStatus] = useState<StatusFilter>(filters.status);
-    const firstRender = useRef(true);
-
-    useEffect(() => {
-        if (firstRender.current) {
-            firstRender.current = false;
-            return;
-        }
-        const t = setTimeout(() => {
-            router.get(
-                '/contracts',
-                { search: search || undefined, status: status === 'all' ? undefined : status },
-                { preserveState: true, preserveScroll: true, replace: true },
-            );
-        }, 300);
-        return () => clearTimeout(t);
-    }, [search, status]);
-
-    const hasFilters = search !== '' || status !== 'all';
+    const { search, setSearch, status, setStatus, hasFilters } =
+        useListFilters<StatusFilter>('/contracts', filters);
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Contratos', href: '/contracts' }]}>
             <Head title="Contratos" />
 
             <div className="flex flex-col gap-6 p-6 lg:p-8">
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <p className="text-[11px] font-semibold tracking-widest text-[#1B6272] uppercase dark:text-[#A9C6D3]">
-                            Administración general
-                        </p>
-                        <h1 className="mt-1 text-2xl font-bold tracking-tight">Contratos</h1>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Consulta los contratos de las empresas clientes y su vigencia.
-                        </p>
-                    </div>
-
+                <PageHeader
+                    title="Contratos"
+                    description="Consulta los contratos de las empresas clientes y su vigencia."
+                >
                     {canCreate && (
-                        <Link
-                            href="/contracts/create"
-                            className="rounded-md bg-[#1B6272] px-4 py-2 text-sm font-medium text-white hover:bg-[#164E5B]"
-                        >
+                        <Link href="/contracts/create" className="btn-brand">
                             Registrar contrato
                         </Link>
                     )}
-                </div>
+                </PageHeader>
 
-                {flash?.success && (
-                    <div className="rounded-md border border-green-200 bg-green-50 px-4 py-2 text-sm font-medium text-green-700">
-                        {flash.success}
-                    </div>
-                )}
+                <FlashMessage message={flash?.success} />
 
+                {/* Filtros */}
                 <div className="flex flex-wrap gap-4">
                     <div className="grid w-64 gap-1.5">
-                        <Label htmlFor="search" className="text-xs">Buscar empresa</Label>
+                        <Label htmlFor="search" className="text-xs">
+                            Buscar empresa
+                        </Label>
                         <Input
                             id="search"
                             value={search}
@@ -117,12 +88,14 @@ export default function ContractsIndex() {
                     </div>
 
                     <div className="grid w-48 gap-1.5">
-                        <Label htmlFor="status" className="text-xs">Estado</Label>
+                        <Label htmlFor="status" className="text-xs">
+                            Estado
+                        </Label>
                         <select
                             id="status"
                             value={status}
                             onChange={(e) => setStatus(e.target.value as StatusFilter)}
-                            className="h-9 rounded-md border bg-transparent px-3 text-sm"
+                            className="filter-select"
                         >
                             <option value="all">Todos</option>
                             <option value="active">Vigentes</option>
@@ -132,24 +105,26 @@ export default function ContractsIndex() {
                     </div>
                 </div>
 
+                {/* Tabla */}
                 <div className="rounded-xl border bg-card">
                     <h2 className="px-5 py-4 text-sm font-semibold">Contratos registrados</h2>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
-                            <thead className="border-y bg-muted/40 text-xs text-muted-foreground">
+                        <table className="data-table">
+                            <thead>
                                 <tr>
-                                    <th className="px-5 py-3 font-medium">Empresa</th>
-                                    <th className="px-5 py-3 font-medium">Inicio</th>
-                                    <th className="px-5 py-3 font-medium">Vencimiento</th>
-                                    <th className="px-5 py-3 font-medium">Monto</th>
-                                    <th className="px-5 py-3 font-medium">Estado</th>
+                                    <th>Empresa</th>
+                                    <th>Inicio</th>
+                                    <th>Vencimiento</th>
+                                    <th>Monto</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {contracts.data.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} className="px-5 py-10 text-center text-muted-foreground">
+                                        <td colSpan={6} className="empty">
                                             {hasFilters
                                                 ? 'No se encontraron contratos con esos filtros.'
                                                 : 'Aún no hay contratos registrados.'}
@@ -158,40 +133,29 @@ export default function ContractsIndex() {
                                 )}
 
                                 {contracts.data.map((c) => (
-                                    <tr key={c.id} className="border-b last:border-0">
-                                        <td className="px-5 py-3">
+                                    <tr key={c.id}>
+                                        <td>
                                             <div className="font-semibold">{c.company ?? '—'}</div>
                                             <div className="text-xs text-muted-foreground">{c.tax_id}</div>
                                         </td>
-                                        <td className="px-5 py-3">{date(c.start_date)}</td>
-                                        <td className="px-5 py-3">{date(c.end_date)}</td>
-                                        <td className="px-5 py-3">{money.format(Number(c.amount))}</td>
-                                        <td className={`px-5 py-3 ${stateClass[c.status]}`}>{stateLabel[c.status]}</td>
+                                        <td>{date(c.start_date)}</td>
+                                        <td>{date(c.end_date)}</td>
+                                        <td>{money.format(Number(c.amount))}</td>
+                                        <td className={stateClass[c.status]}>{stateLabel[c.status]}</td>
+                                        <td>
+                                            <RowActions
+                                                editHref={canUpdate ? `/contracts/${c.id}/edit` : undefined}
+                                                deleteHref={canDelete ? `/contracts/${c.id}` : undefined}
+                                                confirmMessage="¿Eliminar este contrato?"
+                                            />
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
 
-                    {contracts.last_page > 1 && (
-                        <div className="flex items-center justify-between border-t px-5 py-3 text-sm">
-                            <span className="text-muted-foreground">
-                                Página {contracts.current_page} de {contracts.last_page}
-                            </span>
-                            <div className="flex gap-2">
-                                {contracts.prev_page_url && (
-                                    <Link href={contracts.prev_page_url} className="rounded-md border px-3 py-1.5 hover:bg-muted">
-                                        Anterior
-                                    </Link>
-                                )}
-                                {contracts.next_page_url && (
-                                    <Link href={contracts.next_page_url} className="rounded-md border px-3 py-1.5 hover:bg-muted">
-                                        Siguiente
-                                    </Link>
-                                )}
-                            </div>
-                        </div>
-                    )}
+                    <Pagination page={contracts} />
                 </div>
             </div>
         </AppLayout>

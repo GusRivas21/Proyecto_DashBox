@@ -25,7 +25,7 @@ class ManagerController extends Controller implements HasMiddleware
     public function index()
     {
         $managers = Manager::query()
-            ->with(['user:id,name,email', 'zone:id,department,municipality,district'])
+            ->with(['user:id,name,email', 'zone:id,department,district'])
             ->orderBy('first_name')
             ->orderBy('last_name')
             ->paginate(10)
@@ -38,7 +38,6 @@ class ManagerController extends Controller implements HasMiddleware
                 'email' => $manager->user?->email,
                 'zone' => $manager->zone ? implode(', ', [
                     $manager->zone->district,
-                    $manager->zone->municipality,
                     $manager->zone->department,
                 ]) : null,
             ]);
@@ -55,9 +54,8 @@ class ManagerController extends Controller implements HasMiddleware
         return Inertia::render('managers/create', [
             'zones' => Zone::query()
                 ->orderBy('department')
-                ->orderBy('municipality')
                 ->orderBy('district')
-                ->get(['id', 'department', 'municipality', 'district']),
+                ->get(['id', 'department', 'district']),
         ]);
     }
 

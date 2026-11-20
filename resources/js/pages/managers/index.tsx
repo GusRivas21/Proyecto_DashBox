@@ -15,11 +15,12 @@ type Manager = {
     phone: string | null;
     email: string | null;
     zone: string | null;
+    active: boolean;
 };
 
 type PageProps = {
     managers: Paginated<Manager>;
-    flash?: { success?: string | null };
+    flash?: { success?: string | null; error?: string | null };
     auth: { user: { permissions: string[] } | null };
 };
 
@@ -27,7 +28,7 @@ export default function ManagersIndex() {
     const { managers, flash, auth } = usePage<PageProps>().props;
     const permissions = auth.user?.permissions ?? [];
     const canCreate = permissions.includes('managers.create');
-    const canUpdate = permissions.includes('managers.update');
+    const canUpdate = permissions.includes('managers.edit');
     const canDelete = permissions.includes('managers.delete');
 
     return (
@@ -47,6 +48,7 @@ export default function ManagersIndex() {
                 </PageHeader>
 
                 <FlashMessage message={flash?.success} />
+                <FlashMessage message={flash?.error} type="error" />
 
                 {/* Tabla */}
                 <div className="rounded-xl border bg-card">
@@ -61,13 +63,14 @@ export default function ManagersIndex() {
                                     <th>Correo</th>
                                     <th>Teléfono</th>
                                     <th>Zona asignada</th>
+                                    <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {managers.data.length === 0 && (
                                     <tr>
-                                        <td colSpan={6} className="empty">
+                                        <td colSpan={7} className="empty">
                                             Aún no hay gerentes registrados.
                                         </td>
                                     </tr>
@@ -82,11 +85,15 @@ export default function ManagersIndex() {
                                         <td>{m.email ?? '—'}</td>
                                         <td>{m.phone ?? '—'}</td>
                                         <td>{m.zone ?? '—'}</td>
+                                        <td className={m.active ? 'text-green-700 dark:text-green-400' : 'text-muted-foreground'}>{m.active ? 'Activo' : 'Inactivo'}</td>
                                         <td>
                                             <RowActions
-                                                editHref={canUpdate ? `/managers/${m.id}/edit` : undefined}
-                                                deleteHref={canDelete ? `/managers/${m.id}` : undefined}
-                                                confirmMessage="¿Eliminar este gerente?"
+                                                viewHref={`/managers/${m.id}`}
+                                                editHref={m.active && canUpdate ? `/managers/${m.id}/edit` : undefined}
+                                                deleteHref={m.active && canDelete ? `/managers/${m.id}` : undefined}
+                                                confirmTitle="¿Dar de baja al gerente?"
+                                                confirmMessage="Se desactivará la cuenta de acceso del gerente y se conservarán sus registros e historial."
+                                                confirmButtonText="Confirmar baja"
                                             />
                                         </td>
                                     </tr>

@@ -114,6 +114,8 @@ class RolePermissionSeeder extends Seeder
             'companies.deactivate',
             'managers.view',
             'managers.create',
+            'managers.edit',
+            'managers.delete',
             'reports.view',
             'emergency.view',
             'audit.view',

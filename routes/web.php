@@ -16,7 +16,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
     Route::resource('companies', CompanyController::class);
     Route::resource('managers', ManagerController::class)
-        ->only(['index', 'create', 'store']);
+        ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::resource('contracts', ContractController::class);
 });
 

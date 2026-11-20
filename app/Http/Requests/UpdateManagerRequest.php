@@ -18,7 +18,6 @@ class UpdateManagerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'administrator_id' => ['sometimes', 'required', 'integer', 'exists:administrators,id'],
             'zone_id' => ['sometimes', 'required', 'integer', 'exists:zones,id'],
             'first_name' => ['sometimes', 'required', 'string', 'max:80'],
             'last_name' => ['sometimes', 'required', 'string', 'max:80'],

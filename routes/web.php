@@ -6,6 +6,7 @@ use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ManagerController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\RecipientController;
+use App\Http\Controllers\ShipmentController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -20,6 +21,7 @@ Route::middleware(['auth'])->group(function () {
         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::resource('contracts', ContractController::class);
     Route::resource('recipients', RecipientController::class);
+    Route::resource('shipments', ShipmentController::class);
 });
 
 require __DIR__.'/settings.php';

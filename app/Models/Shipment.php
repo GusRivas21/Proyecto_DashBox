@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Shipment extends Model
 {
     public const STATUSES = ['registered', 'assigned', 'in_transit', 'delivered', 'returned', 'cancelled'];
+    public const SIZES = ['small', 'medium', 'large'];
+    public const CARGO_TYPES = ['fragile', 'neutral', 'heavy'];
 
     protected $fillable = [
-        'company_id',
+        'company_id',   
         'recipient_id',
         'manager_id',
         'driver_id',

@@ -10,9 +10,25 @@ use App\Models\Shipment;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Str;
 
 class ShipmentService
 {
+    /**
+     * Etiquetas que ve el usuario (sin acentos y en minúsculas) por cada valor guardado.
+     */
+    private const SIZE_LABELS = [
+        'small'  => 'pequeno',
+        'medium' => 'mediano',
+        'large'  => 'grande',
+    ];
+
+    private const CARGO_LABELS = [
+        'fragile' => 'fragil',
+        'neutral' => 'neutro',
+        'heavy'   => 'pesado',
+    ];
+
     public function paginate(int $companyId, array $filters): LengthAwarePaginator
     {
         $search = $filters['search'] ?? '';
@@ -22,13 +38,28 @@ class ShipmentService
             ->with('recipient:id,name')
             ->where('company_id', $companyId)
             ->when($status !== 'all', fn ($query) => $query->where('status', $status))
-            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
-                $query->where('cargo_type', 'like', "%{$search}%")
-                    ->orWhere('size', 'like', "%{$search}%")
-                    ->orWhereHas('recipient', fn ($q) => $q->where('name', 'like', "%{$search}%"));
-            }))
+            ->when($search !== '', function ($query) use ($search) {
+                $sizes  = $this->matchingValues(self::SIZE_LABELS, $search);
+                $cargos = $this->matchingValues(self::CARGO_LABELS, $search);
+
+                $query->where(function ($query) use ($search, $sizes, $cargos) {
+                    $query->whereHas('recipient', fn ($q) => $q->where('name', 'ilike', "%{$search}%"))
+                        ->orWhereIn('size', $sizes)
+                        ->orWhereIn('cargo_type', $cargos);
+                });
+            })
             ->latest()
             ->paginate(10);
+    }
+
+    /**
+     * Devuelve los valores guardados cuya etiqueta contiene el texto buscado.
+     */
+    private function matchingValues(array $labels, string $search): array
+    {
+        $term = Str::lower(Str::ascii($search));
+
+        return array_keys(array_filter($labels, fn ($label) => str_contains($label, $term)));
     }
 
     public function recipientsForCompany(int $companyId): Collection
@@ -36,7 +67,6 @@ class ShipmentService
         return Recipient::where('company_id', $companyId)
             ->orderBy('name')
             ->get(['id', 'name', 'address', 'contact']);
-
     }
 
     public function hasActiveContract(int $companyId): bool
@@ -79,7 +109,6 @@ class ShipmentService
 
         $company = Company::findOrFail($companyId);
 
-        // El gerente se asigna según la zona de la empresa
         $managerId = Manager::where('zone_id', $company->zone_id)->value('id');
 
         if (! $managerId) {

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 export default function useListFilters<S extends string = 'all'>(
     url: string,
     initial: { search: string; status?: S },
+    filterKey = 'status',
 ) {
     const [search, setSearch] = useState(initial.search);
     const [status, setStatus] = useState<S | 'all'>(initial.status ?? 'all');
@@ -20,14 +21,14 @@ export default function useListFilters<S extends string = 'all'>(
                 url,
                 {
                     search: search || undefined,
-                    status: status === 'all' ? undefined : status,
+                    [filterKey]: status === 'all' ? undefined : status,
                 },
                 { preserveState: true, preserveScroll: true, replace: true },
             );
         }, 300);
 
         return () => clearTimeout(t);
-    }, [search, status, url]);
+    }, [search, status, url, filterKey]);
 
     return {
         search,

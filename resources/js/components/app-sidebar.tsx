@@ -106,7 +106,7 @@ const mainNavItems: SidebarNavItem[] = [
     },
     {
         title: 'Envíos pendientes',
-        url: '/unassignedShipments',
+        url: '/unassigned-shipments',
         icon: PackageSearch,
         permission: 'unassignedShipments.view',
     },

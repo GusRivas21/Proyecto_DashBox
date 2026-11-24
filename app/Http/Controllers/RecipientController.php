@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreRecipientRequest;
 use App\Http\Requests\UpdateRecipientRequest;
+use App\Models\Company;
 use App\Services\RecipientService;
 use DomainException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -18,9 +20,25 @@ class RecipientController extends Controller implements HasMiddleware
         return [
             new Middleware('can:recipients.view', only: ['index']),
             new Middleware('can:recipients.create', only: ['create', 'store']),
-            new Middleware('can:recipients.update', only: ['edit', 'update']),
+            new Middleware('can:recipients.edit', only: ['edit', 'update']),
             new Middleware('can:recipients.delete', only: ['destroy']),
         ];
+    }
+
+    /**
+     * El id de la empresa es el id del usuario con el que se inicia sesión.
+     */
+    private function companyId(Request $request): int
+    {
+        $id = $request->user()->id;
+
+        abort_unless(
+            Company::whereKey($id)->exists(),
+            403,
+            'Tu usuario no está asociado a una empresa.',
+        );
+
+        return $id;
     }
 
     public function index(Request $request, RecipientService $service)
@@ -29,7 +47,7 @@ class RecipientController extends Controller implements HasMiddleware
             'search' => trim((string) $request->query('search', '')),
         ];
 
-        $recipients = $service->paginate($request->user()->company_id, $filters)
+        $recipients = $service->paginate($this->companyId($request), $filters)
             ->withQueryString()
             ->through(fn ($r) => [
                 'id'      => $r->id,
@@ -54,7 +72,7 @@ class RecipientController extends Controller implements HasMiddleware
         try {
             $service->register([
                 ...$request->validated(),
-                'company_id' => $request->user()->company_id,
+                'company_id' => $this->companyId($request),
             ]);
 
             return redirect()
@@ -74,7 +92,7 @@ class RecipientController extends Controller implements HasMiddleware
 
     public function edit(Request $request, int $recipient, RecipientService $service)
     {
-        $recipient = $service->findForCompany($recipient, $request->user()->company_id);
+        $recipient = $service->findForCompany($recipient, $this->companyId($request));
 
         return Inertia::render('recipients/edit', [
             'recipient' => $recipient->only('id', 'name', 'address', 'contact'),
@@ -84,11 +102,15 @@ class RecipientController extends Controller implements HasMiddleware
     public function update(UpdateRecipientRequest $request, int $recipient, RecipientService $service)
     {
         try {
-            $service->update($recipient, $request->user()->company_id, $request->validated());
+            $service->update($recipient, $this->companyId($request), $request->validated());
 
             return redirect()
                 ->route('recipients.index')
                 ->with('success', 'Destinatario actualizado correctamente.');
+
+        } catch (ModelNotFoundException $e) {
+
+            abort(404);
 
         } catch (\Exception $e) {
 
@@ -104,7 +126,7 @@ class RecipientController extends Controller implements HasMiddleware
     public function destroy(Request $request, int $recipient, RecipientService $service)
     {
         try {
-            $service->delete($recipient, $request->user()->company_id);
+            $service->delete($recipient, $this->companyId($request));
 
             return redirect()
                 ->route('recipients.index')

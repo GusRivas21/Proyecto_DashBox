@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { CheckCircle2, CircleUserRound, Pencil, Search, Truck, UserRoundX, Users, X, type LucideIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -24,6 +24,7 @@ type Transporter = {
 type StatusFilter = 'all' | 'active' | 'inactive';
 
 export default function TransportersIndex({ transporters }: { transporters: Transporter[] }) {
+    const { flash } = usePage<{ flash?: { success?: string | null } }>().props;
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState<StatusFilter>('all');
     const [selected, setSelected] = useState<Transporter | null>(null);
@@ -80,10 +81,17 @@ export default function TransportersIndex({ transporters }: { transporters: Tran
                         <span className="mt-0.5 shrink-0 rounded-full bg-sky-100 px-2.5 py-1 text-[10px] font-bold tracking-wider text-sky-800 uppercase dark:bg-sky-900 dark:text-sky-100">
                             Vista previa
                         </span>
-                        <p className="leading-relaxed text-sky-950 dark:text-sky-100">
-                            El registro, la edición y la baja están en modo de demostración.
-                        </p>
+                        <p className="leading-relaxed text-sky-950 dark:text-sky-100">El registro y la baja están en modo de demostración.</p>
                     </div>
+
+                    {flash?.success && (
+                        <p
+                            role="status"
+                            className="rounded-lg border border-emerald-300/70 bg-emerald-50 px-4 py-3 text-sm text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100"
+                        >
+                            {flash.success}
+                        </p>
+                    )}
 
                     {notice && (
                         <div
@@ -198,7 +206,7 @@ export default function TransportersIndex({ transporters }: { transporters: Tran
                                                     <div className="font-semibold">
                                                         {transporter.first_name} {transporter.last_name}
                                                     </div>
-                                                    <div className="text-muted-foreground mt-0.5 text-xs">ID demo · {transporter.id}</div>
+                                                    <div className="text-muted-foreground mt-0.5 text-xs">ID · {transporter.id}</div>
                                                 </td>
                                                 <td>
                                                     <div>{transporter.national_id}</div>
@@ -217,16 +225,16 @@ export default function TransportersIndex({ transporters }: { transporters: Tran
                                                     <StatusPill active={active} />
                                                 </td>
                                                 <td>
-                                                    <div className="flex justify-end gap-1">
-                                                        <Link
-                                                            href={`/transporters/${transporter.id}/edit`}
-                                                            className="icon-action"
-                                                            title="Editar transportista"
-                                                            aria-label={`Editar a ${transporter.first_name} ${transporter.last_name}`}
-                                                        >
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Link>
-                                                        {active && (
+                                                    {active && (
+                                                        <div className="flex justify-end gap-1">
+                                                            <Link
+                                                                href={`/transporters/${transporter.id}/edit`}
+                                                                className="icon-action"
+                                                                title="Editar transportista"
+                                                                aria-label={`Editar a ${transporter.first_name} ${transporter.last_name}`}
+                                                            >
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Link>
                                                             <button
                                                                 type="button"
                                                                 className="icon-action-danger"
@@ -236,8 +244,8 @@ export default function TransportersIndex({ transporters }: { transporters: Tran
                                                             >
                                                                 <UserRoundX className="h-4 w-4" />
                                                             </button>
-                                                        )}
-                                                    </div>
+                                                        </div>
+                                                    )}
                                                 </td>
                                             </tr>
                                         );

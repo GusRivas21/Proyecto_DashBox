@@ -12,9 +12,8 @@ type Transporter = {
     national_id: string;
     license_number: string;
     phone: string | null;
-    zone: { id: number; label: string } | null;
-    manager: { id: number; label: string } | null;
-    vehicle: { id: number; label: string } | null;
+    manager_id: number;
+    vehicle_id: number | null;
 };
 
 export default function EditTransporter({
@@ -29,12 +28,12 @@ export default function EditTransporter({
     const initialValues: Partial<DriverFormValues> = {
         first_name: transporter.first_name,
         last_name: transporter.last_name,
-        national_id: transporter.national_id,
+        national_id: transporter.national_id.replace(/^(\d{8})(\d)$/, '$1-$2'),
         license_number: transporter.license_number,
         phone: transporter.phone ?? '',
         zone_id: managerZone ? String(managerZone.id) : '',
-        manager_id: transporter.manager ? String(transporter.manager.id) : '',
-        vehicle_id: transporter.vehicle ? String(transporter.vehicle.id) : '',
+        manager_id: String(transporter.manager_id),
+        vehicle_id: transporter.vehicle_id === null ? '' : String(transporter.vehicle_id),
     };
 
     return (
@@ -60,15 +59,14 @@ export default function EditTransporter({
                         </div>
                     </div>
 
-                    <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm dark:border-sky-900 dark:bg-sky-950/30">
-                        <p className="font-semibold text-sky-950 dark:text-sky-100">Datos de demostración · registro {transporter.id}</p>
-                        <p className="mt-1 leading-relaxed text-sky-900/80 dark:text-sky-100/80">
-                            Los datos personales visibles son ficticios y sirven para revisar la interfaz. No se enviarán ni guardarán cambios. El
-                            backend debe proporcionar los datos actuales y las opciones de asignación.
-                        </p>
-                    </div>
-
-                    <DriverForm mode="edit" options={options} initialValues={initialValues} managerZone={managerZone} />
+                    <DriverForm
+                        key={transporter.id}
+                        mode="edit"
+                        transporterId={transporter.id}
+                        options={options}
+                        initialValues={initialValues}
+                        managerZone={managerZone}
+                    />
                 </div>
             </ManagerOnly>
         </AppLayout>

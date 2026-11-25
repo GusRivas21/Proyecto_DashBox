@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { Save } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 
@@ -144,7 +144,13 @@ function OptionField({
                 className={selectClass}
             >
                 {!locked && (
-                    <option value="">{enabled ? `Selecciona ${label.toLowerCase()}` : (emptyLabel ?? 'Opciones pendientes del backend')}</option>
+                    <option value="">
+                        {enabled
+                            ? required
+                                ? `Selecciona ${label.toLowerCase()}`
+                                : 'Sin asignar'
+                            : (emptyLabel ?? 'Opciones pendientes del backend')}
+                    </option>
                 )}
                 {options.map((option) => (
                     <option key={option.id} value={option.id}>
@@ -163,32 +169,45 @@ function OptionField({
 
 export default function DriverForm({
     mode,
+    transporterId,
     options,
     initialValues,
     managerZone = null,
 }: {
-    mode: 'create' | 'edit';
     options: DriverOptions;
     initialValues?: Partial<DriverFormValues>;
     managerZone?: DriverOption | null;
-}) {
-    const { errors = {} } = usePage<{
-        errors?: Partial<Record<keyof DriverFormValues, string>>;
-    }>().props;
-    const [values, setValues] = useState<DriverFormValues>({
+} & ({ mode: 'create'; transporterId?: never } | { mode: 'edit'; transporterId: number })) {
+    const {
+        data: values,
+        setData,
+        put,
+        processing,
+        errors,
+        clearErrors,
+    } = useForm<DriverFormValues>({
         ...emptyValues,
         ...initialValues,
         zone_id: managerZone ? String(managerZone.id) : '',
     });
     const [notice, setNotice] = useState(false);
     const isEdit = mode === 'edit';
-    const availableVehicles = options.vehicles.filter((vehicle) => vehicle.status === 'available');
+    const availableVehicles = options.vehicles.filter(
+        (vehicle) => vehicle.status === 'available' || String(vehicle.id) === initialValues?.vehicle_id,
+    );
 
-    const update = (key: keyof DriverFormValues, value: string) => setValues((current) => ({ ...current, [key]: value }));
+    const update = (key: keyof DriverFormValues, value: string) => {
+        setData(key, value);
+        clearErrors(key);
+    };
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setNotice(true);
+        if (mode === 'edit') {
+            put(`/transporters/${transporterId}`);
+        } else {
+            setNotice(true);
+        }
     };
 
     return (
@@ -240,7 +259,7 @@ export default function DriverForm({
                             value={values.national_id}
                             onChange={(value) => update('national_id', value)}
                             required
-                            pattern="[0-9]{8}-[0-9]"
+                            pattern={isEdit && values.national_id === initialValues?.national_id ? undefined : '[0-9]{8}-[0-9]'}
                             maxLength={10}
                             error={errors.national_id}
                             placeholder="00000000-0"
@@ -264,11 +283,11 @@ export default function DriverForm({
                             type="tel"
                             placeholder="0000-0000"
                             required
-                            pattern="[0-9+() -]{8,20}"
+                            pattern={String.raw`[0-9+\(\) \-]{8,20}`}
                             minLength={8}
                             maxLength={20}
                             error={errors.phone}
-                            hint="La HU-6 requiere este dato; el backend aún permite dejarlo vacío."
+                            hint="Ingresá entre 8 y 15 dígitos. Podés incluir el código de país."
                         />
                     </div>
                 </section>
@@ -313,7 +332,11 @@ export default function DriverForm({
                             options={availableVehicles}
                             onChange={(value) => update('vehicle_id', value)}
                             emptyLabel="No hay camiones disponibles"
-                            hint="Solo se mostrarán camiones con estado disponible."
+                            hint={
+                                isEdit
+                                    ? 'Podés conservar el vehículo actual o elegir uno disponible de tu zona.'
+                                    : 'Solo se mostrarán camiones con estado disponible.'
+                            }
                             error={errors.vehicle_id}
                         />
                     </div>
@@ -330,13 +353,13 @@ export default function DriverForm({
                 )}
 
                 <div className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-muted-foreground text-xs">Modo de demostración · sin conexión al backend</p>
-                    <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                    {!isEdit && <p className="text-muted-foreground text-xs">Modo de demostración · sin conexión al backend</p>}
+                    <div className="ml-auto flex flex-col-reverse gap-2 sm:flex-row">
                         <Button type="button" variant="outline" className="h-10 px-5" asChild>
                             <Link href="/transporters">Cancelar</Link>
                         </Button>
-                        <Button type="submit" className="h-10 bg-[#1B6272] px-5 text-white hover:bg-[#164E5B]">
-                            {isEdit ? 'Actualizar transportista' : 'Registrar transportista'}
+                        <Button type="submit" disabled={processing} className="h-10 bg-[#1B6272] px-5 text-white hover:bg-[#164E5B]">
+                            {processing ? 'Guardando…' : isEdit ? 'Actualizar transportista' : 'Registrar transportista'}
                         </Button>
                     </div>
                 </div>

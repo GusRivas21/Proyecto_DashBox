@@ -23,29 +23,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('transporters', [TransporterController::class, 'index'])
         ->middleware('can:transporters.view')->name('transporters.index');
 
-    // Rutas de vista previa del formulario de HU-6.
+    // Vista previa del registro de HU-6.
     Route::get('transporters/create', function () {
         return Inertia::render('transporters/create', [
             'options' => ['zones' => [], 'managers' => [], 'vehicles' => []],
         ]);
     })->middleware('can:transporters.view')->name('transporters.create');
 
-    Route::get('transporters/{driver}/edit', function (int $driver) {
-        return Inertia::render('transporters/edit', [
-            'transporter' => [
-                'id' => $driver,
-                'first_name' => 'Ana',
-                'last_name' => 'Demo',
-                'national_id' => '00000000-0',
-                'license_number' => 'LIC-DEMO-001',
-                'phone' => '7000-0000',
-                'zone' => null,
-                'manager' => null,
-                'vehicle' => null,
-            ],
-            'options' => ['zones' => [], 'managers' => [], 'vehicles' => []],
-        ]);
-    })->middleware('can:transporters.view')->name('transporters.edit');
+    Route::get('transporters/{driver}/edit', [TransporterController::class, 'edit'])
+        ->middleware('can:transporters.view')->name('transporters.edit');
+    Route::put('transporters/{driver}', [TransporterController::class, 'update'])
+        ->middleware('can:transporters.view')->name('transporters.update');
 });
 
 require __DIR__.'/settings.php';

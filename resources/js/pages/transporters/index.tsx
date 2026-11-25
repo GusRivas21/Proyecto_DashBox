@@ -81,8 +81,7 @@ export default function TransportersIndex({ transporters }: { transporters: Tran
                             Vista previa
                         </span>
                         <p className="leading-relaxed text-sky-950 dark:text-sky-100">
-                            Los registros mostrados son datos de demostración. La lista real, los permisos y la baja lógica dependen de la integración
-                            del backend.
+                            El registro, la edición y la baja están en modo de demostración.
                         </p>
                     </div>
 
@@ -104,7 +103,7 @@ export default function TransportersIndex({ transporters }: { transporters: Tran
                     )}
 
                     <section aria-label="Resumen de transportistas" className="grid gap-4 sm:grid-cols-3">
-                        <SummaryCard icon={Users} label="Registros de demostración" value={transporters.length} tone="brand" />
+                        <SummaryCard icon={Users} label="Transportistas" value={transporters.length} tone="brand" />
                         <SummaryCard icon={CheckCircle2} label="Activos" value={activeCount} tone="green" />
                         <SummaryCard icon={UserRoundX} label="Inactivos" value={inactiveCount} tone="muted" />
                     </section>
@@ -114,7 +113,7 @@ export default function TransportersIndex({ transporters }: { transporters: Tran
                             <div>
                                 <h2 className="text-base font-semibold">Directorio de transportistas</h2>
                                 <p className="text-muted-foreground mt-1 text-sm">
-                                    Datos de demostración · {filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}
+                                    {filtered.length} {filtered.length === 1 ? 'resultado' : 'resultados'}
                                 </p>
                             </div>
                             <div className="grid gap-3 sm:grid-cols-[minmax(16rem,1fr)_12rem]">
@@ -245,10 +244,6 @@ export default function TransportersIndex({ transporters }: { transporters: Tran
                                     })}
                                 </tbody>
                             </table>
-                        </div>
-                        <div className="text-muted-foreground flex flex-col gap-1 border-t px-5 py-3 text-xs sm:flex-row sm:items-center sm:justify-between">
-                            <span>La búsqueda y los filtros operan solo sobre estos datos de demostración.</span>
-                            <span>Los registros inactivos se identifican usando la baja lógica de SoftDeletes.</span>
                         </div>
                     </section>
                 </div>

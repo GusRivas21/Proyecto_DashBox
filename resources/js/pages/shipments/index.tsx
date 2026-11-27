@@ -2,13 +2,14 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 
 import FlashMessage from '@/components/flash-message';
-import InputError from '@/components/input-error';
 import PageHeader from '@/components/page-header';
 import Pagination from '@/components/pagination';
 import RowActions from '@/components/row-actions';
 import { Badge } from '@/components/ui/badge';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import useListFilters from '@/hooks/use-list-filters';
 import AppLayout from '@/layouts/app-layout';
 import type { Paginated } from '@/types/pagination';
@@ -132,44 +133,40 @@ export default function ShipmentsIndex() {
                         <Label htmlFor="status" className="text-xs">
                             Estado
                         </Label>
-                        <select
-                            id="status"
-                            value={status}
-                            onChange={(e) => setStatus(e.target.value as StatusFilter)}
-                            className="filter-select"
-                        >
-                            <option value="all">Todos</option>
-                            <option value="registered">Pendientes</option>
-                            <option value="assigned">Asignados</option>
-                            <option value="in_transit">En camino</option>
-                            <option value="delivered">Entregados</option>
-                            <option value="returned">Devueltos</option>
-                            <option value="cancelled">Cancelados</option>
-                        </select>
+                        <Select value={status} onValueChange={(value) => setStatus(value as StatusFilter)}>
+                            <SelectTrigger id="status">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="[&_[data-radix-select-viewport]]:h-auto">
+                                <SelectItem value="all">Todos</SelectItem>
+                                <SelectItem value="registered">Pendientes</SelectItem>
+                                <SelectItem value="assigned">Asignados</SelectItem>
+                                <SelectItem value="in_transit">En camino</SelectItem>
+                                <SelectItem value="delivered">Entregados</SelectItem>
+                                <SelectItem value="returned">Devueltos</SelectItem>
+                                <SelectItem value="cancelled">Cancelados</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
-                    <div className="grid w-full gap-1.5 sm:w-40">
-                        <Label htmlFor="date-from" className="text-xs">Fecha de registro desde</Label>
-                        <Input
-                            id="date-from"
-                            type="date"
+                    <div className="w-full sm:w-40">
+                        <DatePicker
+                            label="Fecha de registro desde"
                             value={dateFrom}
-                            onChange={(event) => setDateFrom(event.target.value)}
-                            aria-invalid={invalidRange || !!errors?.date_from}
+                            onChange={setDateFrom}
+                            invalid={invalidRange}
+                            error={errors?.date_from}
                         />
-                        <InputError message={errors?.date_from} />
                     </div>
 
-                    <div className="grid w-full gap-1.5 sm:w-40">
-                        <Label htmlFor="date-to" className="text-xs">Fecha de registro hasta</Label>
-                        <Input
-                            id="date-to"
-                            type="date"
+                    <div className="w-full sm:w-40">
+                        <DatePicker
+                            label="Fecha de registro hasta"
                             value={dateTo}
-                            onChange={(event) => setDateTo(event.target.value)}
-                            aria-invalid={invalidRange || !!errors?.date_to}
+                            onChange={setDateTo}
+                            invalid={invalidRange}
+                            error={invalidRange ? 'La fecha final debe ser igual o posterior a la inicial.' : errors?.date_to}
                         />
-                        <InputError message={invalidRange ? 'La fecha final debe ser igual o posterior a la inicial.' : errors?.date_to} />
                     </div>
                 </div>
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreShipmentRequest;
 use App\Http\Requests\UpdateShipmentRequest;
+use App\Models\Company;
 use App\Models\Shipment;
 use App\Services\ShipmentService;
 use DomainException;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class ShipmentController extends Controller implements HasMiddleware
@@ -35,15 +37,32 @@ class ShipmentController extends Controller implements HasMiddleware
 
     public function index(Request $request, ShipmentService $service)
     {
+        $companyId = $this->companyId($request);
+        abort_unless($request->user()->hasRole('company') && Company::whereKey($companyId)->exists(), 403);
+
+        $dates = $request->validate([
+            'date_from' => ['nullable', 'date_format:Y-m-d'],
+            'date_to' => ['nullable', 'date_format:Y-m-d', Rule::when($request->filled('date_from'), 'after_or_equal:date_from')],
+        ], [
+            'date_from.date_format' => 'Ingresá una fecha inicial válida.',
+            'date_to.date_format' => 'Ingresá una fecha final válida.',
+            'date_to.after_or_equal' => 'La fecha final debe ser igual o posterior a la fecha inicial.',
+        ]);
+
+        $search = $request->query('search');
+        $status = $request->query('status');
         $filters = [
-            'search' => trim((string) $request->query('search', '')),
-            'status' => in_array($request->query('status'), Shipment::STATUSES)
-                ? $request->query('status')
-                : 'all',
+            'search' => is_string($search) ? trim($search) : '',
+            'status' => in_array($status, Shipment::STATUSES, true) ? $status : 'all',
+            'date_from' => $dates['date_from'] ?? '',
+            'date_to' => $dates['date_to'] ?? '',
         ];
 
-        $shipments = $service->paginate($this->companyId($request), $filters)
-            ->withQueryString()
+        $shipments = $service->paginate($companyId, $filters)
+            ->appends(array_filter([
+                ...$filters,
+                'status' => $filters['status'] === 'all' ? '' : $filters['status'],
+            ], fn ($value) => $value !== ''))
             ->through(fn ($s) => [
                 'id'         => $s->id,
                 'recipient'  => $s->recipient?->name,

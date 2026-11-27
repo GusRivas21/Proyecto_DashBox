@@ -1,11 +1,15 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 
 import FlashMessage from '@/components/flash-message';
 import PageHeader from '@/components/page-header';
 import Pagination from '@/components/pagination';
 import RowActions from '@/components/row-actions';
+import { Badge } from '@/components/ui/badge';
+import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import useListFilters from '@/hooks/use-list-filters';
 import AppLayout from '@/layouts/app-layout';
 import type { Paginated } from '@/types/pagination';
@@ -25,7 +29,8 @@ type Shipment = {
 
 type PageProps = {
     shipments: Paginated<Shipment>;
-    filters: { search: string; status: StatusFilter };
+    filters: { search: string; status: StatusFilter; date_from: string; date_to: string };
+    errors?: { date_from?: string; date_to?: string };
     flash?: {
         success?: string | null;
         error?: string | null;
@@ -48,7 +53,7 @@ const cargoLabel: Record<string, string> = {
 const statusLabel: Record<Status, string> = {
     registered: 'Pendiente',
     assigned: 'Asignado',
-    in_transit: 'En tránsito',
+    in_transit: 'En camino',
     delivered: 'Entregado',
     returned: 'Devuelto',
     cancelled: 'Cancelado',
@@ -66,12 +71,22 @@ const statusClass: Record<Status, string> = {
 const date = (d: string) => d.split('-').reverse().join('/');
 
 export default function ShipmentsIndex() {
-    const { shipments, filters, flash, auth } = usePage<PageProps>().props;
+    const { shipments, filters, flash, auth, errors } = usePage<PageProps>().props;
+    const [dateFrom, setDateFrom] = useState(filters.date_from);
+    const [dateTo, setDateTo] = useState(filters.date_to);
+    const invalidRange = Boolean(dateFrom && dateTo && dateFrom > dateTo);
+    const dateQuery = useMemo(
+        () => ({ date_from: dateFrom || undefined, date_to: dateTo || undefined }),
+        [dateFrom, dateTo],
+    );
     const permissions = auth.user?.permissions ?? [];
     const canCreate = permissions.includes('shipments.create');
     const canUpdate = permissions.includes('shipments.edit');
     const canDelete = permissions.includes('shipments.delete');
-    const { search, setSearch, status, setStatus, hasFilters } = useListFilters<StatusFilter>('/shipments', filters);
+    const { search, setSearch, status, setStatus, hasFilters } = useListFilters<StatusFilter>('/shipments', filters, 'status', {
+        query: dateQuery,
+        enabled: !invalidRange,
+    });
 
     return (
         <AppLayout breadcrumbs={[{ title: 'Envíos', href: '/shipments' }]}>
@@ -101,8 +116,8 @@ export default function ShipmentsIndex() {
                 />
 
                 {/* Filtros */}
-                <div className="flex flex-wrap gap-4">
-                    <div className="grid w-64 gap-1.5">
+                <div className="flex flex-wrap items-start gap-4">
+                    <div className="grid w-full gap-1.5 sm:w-64">
                         <Label htmlFor="search" className="text-xs">
                             Buscar envío
                         </Label>
@@ -114,24 +129,44 @@ export default function ShipmentsIndex() {
                         />
                     </div>
 
-                    <div className="grid w-48 gap-1.5">
+                    <div className="grid w-full gap-1.5 sm:w-48">
                         <Label htmlFor="status" className="text-xs">
                             Estado
                         </Label>
-                        <select
-                            id="status"
-                            value={status}
-                            onChange={(e) => setStatus(e.target.value as StatusFilter)}
-                            className="filter-select"
-                        >
-                            <option value="all">Todos</option>
-                            <option value="registered">Pendientes</option>
-                            <option value="assigned">Asignados</option>
-                            <option value="in_transit">En tránsito</option>
-                            <option value="delivered">Entregados</option>
-                            <option value="returned">Devueltos</option>
-                            <option value="cancelled">Cancelados</option>
-                        </select>
+                        <Select value={status} onValueChange={(value) => setStatus(value as StatusFilter)}>
+                            <SelectTrigger id="status">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="[&_[data-radix-select-viewport]]:h-auto">
+                                <SelectItem value="all">Todos</SelectItem>
+                                <SelectItem value="registered">Pendientes</SelectItem>
+                                <SelectItem value="assigned">Asignados</SelectItem>
+                                <SelectItem value="in_transit">En camino</SelectItem>
+                                <SelectItem value="delivered">Entregados</SelectItem>
+                                <SelectItem value="returned">Devueltos</SelectItem>
+                                <SelectItem value="cancelled">Cancelados</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="w-full sm:w-40">
+                        <DatePicker
+                            label="Fecha de registro desde"
+                            value={dateFrom}
+                            onChange={setDateFrom}
+                            invalid={invalidRange}
+                            error={errors?.date_from}
+                        />
+                    </div>
+
+                    <div className="w-full sm:w-40">
+                        <DatePicker
+                            label="Fecha de registro hasta"
+                            value={dateTo}
+                            onChange={setDateTo}
+                            invalid={invalidRange}
+                            error={invalidRange ? 'La fecha final debe ser igual o posterior a la inicial.' : errors?.date_to}
+                        />
                     </div>
                 </div>
 
@@ -182,7 +217,7 @@ export default function ShipmentsIndex() {
                                         <td>{date(s.created_at)}</td>
 
                                         {/* Estado */}
-                                        <td className={statusClass[s.status]}>{statusLabel[s.status]}</td>
+                                        <td><Badge variant="outline" className={statusClass[s.status]}>{statusLabel[s.status] ?? s.status}</Badge></td>
 
                                         {/* Acciones */}
                                         <td>

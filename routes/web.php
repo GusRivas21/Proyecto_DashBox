@@ -8,6 +8,8 @@ use App\Http\Controllers\ContractController;
 use App\Http\Controllers\RecipientController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\PendingShipmentController;
+use App\Http\Controllers\ShipmentReturnController;
+use Spatie\Permission\Middleware\RoleMiddleware;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -25,6 +27,10 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('shipments', ShipmentController::class);
     Route::get('unassigned-shipments', [PendingShipmentController::class, 'index'])
         ->name('unassigned-shipments.index');
+    Route::middleware([RoleMiddleware::class.':manager', 'can:shipments.return'])->group(function () {
+        Route::get('returns', [ShipmentReturnController::class, 'index'])->name('returns.index');
+        Route::post('returns', [ShipmentReturnController::class, 'store'])->name('returns.store');
+    });
 });
 
 require __DIR__.'/settings.php';

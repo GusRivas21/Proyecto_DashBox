@@ -7,8 +7,19 @@ use App\Models\DeliveryProof;
 use App\Models\Manager;
 use App\Models\Shipment;
 use App\Models\User;
+use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
-use RuntimeException;
+use OpenSpout\Common\Entity\Cell\DateTimeCell;
+use OpenSpout\Common\Entity\Cell\EmptyCell;
+use OpenSpout\Common\Entity\Cell\StringCell;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\CellAlignment;
+use OpenSpout\Common\Entity\Style\CellVerticalAlignment;
+use OpenSpout\Common\Entity\Style\Style;
+use OpenSpout\Writer\AutoFilter;
+use OpenSpout\Writer\XLSX\Entity\SheetView;
+use OpenSpout\Writer\XLSX\Options;
+use OpenSpout\Writer\XLSX\Writer;
 
 class ShipmentReportService
 {
@@ -24,6 +35,19 @@ class ShipmentReportService
         'returned' => 'Devuelto',
         'cancelled' => 'Cancelado',
     ];
+
+    private const EXCEL_COLUMNS = [
+        'code' => ['Envío', 16],
+        'company' => ['Empresa', 27],
+        'recipient' => ['Destinatario', 25],
+        'driver' => ['Transportista', 25],
+        'zone' => ['Zona', 30],
+        'status_label' => ['Estado', 16],
+        'registered_on' => ['Fecha de registro', 21],
+        'delivered_on' => ['Fecha de entrega', 21],
+    ];
+
+    private const EXCEL_ROW_LIMIT = 1_048_576;
 
     public function manager(User $user): ?Manager
     {
@@ -91,32 +115,61 @@ class ShipmentReportService
         ];
     }
 
-    public function streamCsv(Builder $query): void
+    public function streamExcel(Builder $query, string $title): void
     {
-        $output = fopen('php://output', 'w');
-        if ($output === false) {
-            throw new RuntimeException('No se pudo generar el reporte CSV.');
+        $options = new Options;
+        foreach (array_values(self::EXCEL_COLUMNS) as $index => [, $width]) {
+            $options->setColumnWidth($width, $index + 1);
         }
 
+        $headerStyle = (new Style)->setFontBold()->setFontColor('FFFFFF')->setBackgroundColor('1B6272')
+            ->setCellVerticalAlignment(CellVerticalAlignment::CENTER);
+        $bodyStyle = (new Style)->setFontColor('10242F')->setShouldWrapText(true)
+            ->setCellVerticalAlignment(CellVerticalAlignment::CENTER);
+        $alternateStyle = (clone $bodyStyle)->setBackgroundColor('EDF5F7');
+        $dateStyle = (new Style)->setFormat('dd/mm/yyyy')->setCellAlignment(CellAlignment::CENTER);
+        $sheetView = (new SheetView)->setFreezeRow(2)->setShowGridLines(false);
+        $columnKeys = array_keys(self::EXCEL_COLUMNS);
+        $lastColumn = count($columnKeys) - 1;
+
+        $writer = new Writer($options);
+        $writer->openToFile('php://output');
+
         try {
-            fwrite($output, "\xEF\xBB\xBF");
-            fputcsv($output, ['Envío', 'Empresa', 'Destinatario', 'Transportista', 'Zona', 'Estado', 'Fecha de registro', 'Fecha de entrega'], ',', '"', '');
+            $sheet = $writer->getCurrentSheet();
+            $sheet->setName($title);
+            $sheet->setSheetView($sheetView);
+            $headers = array_column(self::EXCEL_COLUMNS, 0);
+            $writer->addRow(Row::fromValues($headers, $headerStyle)->setHeight(25));
 
             foreach ($query->cursor() as $shipment) {
+                if ($sheet->getWrittenRowCount() === self::EXCEL_ROW_LIMIT) {
+                    $sheet->setAutoFilter(new AutoFilter(0, 1, $lastColumn, self::EXCEL_ROW_LIMIT));
+                    $sheet = $writer->addNewSheetAndMakeItCurrent();
+                    $sheet->setName($title.' '.$sheet->getIndex());
+                    $sheet->setSheetView($sheetView);
+                    $writer->addRow(Row::fromValues($headers, $headerStyle)->setHeight(25));
+                }
+
                 $row = $this->row($shipment);
-                unset($row['status']);
+                $cells = [];
+                foreach ($columnKeys as $key) {
+                    $value = $row[$key];
+                    // Escribir los nombres como texto evita que Excel los interprete como fórmulas.
+                    $cells[] = match (true) {
+                        $value === null => new EmptyCell(null, null),
+                        $key === 'registered_on' || $key === 'delivered_on' => new DateTimeCell(new DateTimeImmutable($value), $dateStyle),
+                        default => new StringCell($value, null),
+                    };
+                }
 
-                // Los nombres de la base pueden empezar con caracteres que Excel interpreta como fórmulas.
-                $values = array_map(static function (?string $value): string {
-                    $value ??= '';
-
-                    return preg_match('/\A(?:[\t\r\n]|[\s\p{Z}\x{FEFF}]*[=+\-@])/u', $value) ? "'".$value : $value;
-                }, $row);
-
-                fputcsv($output, $values, ',', '"', '');
+                $style = $sheet->getWrittenRowCount() % 2 === 1 ? $alternateStyle : $bodyStyle;
+                $writer->addRow(new Row($cells, $style));
             }
+
+            $sheet->setAutoFilter(new AutoFilter(0, 1, $lastColumn, $sheet->getWrittenRowCount()));
         } finally {
-            fclose($output);
+            $writer->close();
         }
     }
 }

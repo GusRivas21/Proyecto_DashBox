@@ -81,7 +81,7 @@ export default function ShipmentReportsIndex() {
                         <Button asChild variant="outline" size="sm">
                             <a href={`/reports/export?view=${view}`}>
                                 <Download aria-hidden="true" />
-                                Descargar CSV
+                                Descargar Excel
                             </a>
                         </Button>
                     )}

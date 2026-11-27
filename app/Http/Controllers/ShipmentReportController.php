@@ -33,12 +33,14 @@ class ShipmentReportController extends Controller
         $manager = $reports->manager($request->user());
         $view = $this->view($request, $manager);
         $query = $reports->query($manager, $view);
-        $name = $view === ShipmentReportService::DELIVERIES ? 'historial-entregas' : 'reporte-envios';
+        [$name, $title] = $view === ShipmentReportService::DELIVERIES
+            ? ['historial-entregas.xlsx', 'Historial de entregas']
+            : ['reporte-envios.xlsx', 'Reporte de envíos'];
 
         return response()->streamDownload(
-            fn () => $reports->streamCsv($query),
-            $name.'.csv',
-            ['Content-Type' => 'text/csv; charset=UTF-8', 'Cache-Control' => 'private, no-store'],
+            fn () => $reports->streamExcel($query, $title),
+            $name,
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'Cache-Control' => 'private, no-store'],
         );
     }
 

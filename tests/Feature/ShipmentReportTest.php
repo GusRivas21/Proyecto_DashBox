@@ -10,6 +10,7 @@ use App\Models\Zone;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+use OpenSpout\Reader\XLSX\Reader;
 
 beforeEach(function () {
     $this->withoutVite();
@@ -55,6 +56,30 @@ function hu11ForeignManager(Manager $reference): Manager
         'last_name' => 'Prueba',
         'national_id' => '1234567899',
     ]);
+}
+
+function hu11Workbook(string $contents): array
+{
+    $path = tempnam(sys_get_temp_dir(), 'dashbox-hu11-');
+    $reader = new Reader;
+
+    try {
+        file_put_contents($path, $contents);
+        $reader->open($path);
+
+        foreach ($reader->getSheetIterator() as $sheet) {
+            return [
+                'name' => $sheet->getName(),
+                'rows' => iterator_to_array($sheet->getRowIterator(), false),
+                'xml' => file_get_contents('zip://'.$path.'#xl/worksheets/sheet1.xml'),
+            ];
+        }
+
+        throw new RuntimeException('The exported workbook has no sheets.');
+    } finally {
+        $reader->close();
+        unlink($path);
+    }
 }
 
 test('the manager history contains only delivered shipments in the zone and uses the recorded delivery date', function () {
@@ -112,32 +137,40 @@ test('the shipment report shows each role the correct scope and retains historic
         );
 });
 
-test('the CSV uses the same view and zone and treats spreadsheet formulas as text', function () {
+test('the Excel export uses the same view and zone and provides columns, filters and actual dates', function () {
     hu11Shipment($this->company, $this->manager, '=2+2', 'delivered', '2026-11-03');
     hu11Shipment($this->company, $this->manager, 'Pendiente local', 'registered');
     hu11Shipment($this->company, hu11ForeignManager($this->manager), 'Fuera de zona', 'delivered', '2026-11-04');
 
     $this->actingAs($this->manager->user);
     $response = $this->get(route('reports.export', ['view' => 'deliveries', 'zone_id' => 999]));
-    $response->assertOk()->assertDownload('historial-entregas.csv')->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-    $csv = $response->streamedContent();
-    $lines = explode("\n", trim(substr($csv, 3)));
-    expect($csv)->toStartWith("\xEF\xBB\xBF")
-        ->not->toContain('Fuera de zona', 'Pendiente local');
-    expect($lines)->toHaveCount(2);
-    expect(str_getcsv($lines[1], ',', '"', ''))->toMatchArray([
-        2 => "'=2+2",
-        5 => 'Entregado',
-        6 => '2026-11-01',
-        7 => '2026-11-03',
-    ]);
+    $response->assertOk()->assertDownload('historial-entregas.xlsx')
+        ->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    $history = hu11Workbook($response->streamedContent());
+    expect($history['name'])->toBe('Historial de entregas');
+    expect($history['xml'])->toContain('autoFilter ref="A1:H2"', 'ySplit="1"');
+    expect($history['rows'])->toHaveCount(2);
+    expect($history['rows'][0]->toArray())->toBe(['Envío', 'Empresa', 'Destinatario', 'Transportista', 'Zona', 'Estado', 'Fecha de registro', 'Fecha de entrega']);
+    $worksheet = simplexml_load_string($history['xml']);
+    $nameCell = $worksheet->xpath('//*[local-name()="c"][@r="C2"]')[0];
+    expect((string) $nameCell['t'])->toBe('inlineStr');
+    expect((string) $nameCell->is->t)->toBe('=2+2');
+    expect(isset($nameCell->f))->toBeFalse();
+    $cells = $history['rows'][1]->getCells();
+    expect($cells[5]->getValue())->toBe('Entregado');
+    expect($cells[6]->getValue()->format('Y-m-d'))->toBe('2026-11-01');
+    expect($cells[7]->getValue()->format('Y-m-d'))->toBe('2026-11-03');
 
     $response = $this->get(route('reports.export', ['view' => 'shipments']));
-    $response->assertOk()->assertDownload('reporte-envios.csv');
-    expect($response->streamedContent())->toContain('Pendiente local')->not->toContain('Fuera de zona');
+    $response->assertOk()->assertDownload('reporte-envios.xlsx');
+    $report = hu11Workbook($response->streamedContent());
+    expect($report['name'])->toBe('Reporte de envíos');
+    expect($report['rows'])->toHaveCount(3);
+    expect($report['rows'][1]->toArray()[2])->toBe('Pendiente local');
+    expect($report['rows'][1]->toArray()[7] ?? '')->toBe('');
 });
 
-test('report pagination keeps the selected view and the CSV includes rows beyond the first page', function () {
+test('report pagination keeps the selected view and the workbook includes rows beyond the first page', function () {
     foreach (range(1, 16) as $number) {
         hu11Shipment($this->company, $this->manager, "Fila número {$number}", 'registered');
     }
@@ -150,8 +183,10 @@ test('report pagination keeps the selected view and the CSV includes rows beyond
             ->where('shipments.next_page_url', fn (string $url) => str_contains($url, 'view=shipments') && str_contains($url, 'page=2'))
         );
 
-    $csv = $this->get(route('reports.export', ['view' => 'shipments']))->assertOk()->streamedContent();
-    expect($csv)->toContain('Fila número 1"', 'Fila número 16"');
+    $workbook = hu11Workbook($this->get(route('reports.export', ['view' => 'shipments']))->assertOk()->streamedContent());
+    expect($workbook['rows'])->toHaveCount(17);
+    expect($workbook['rows'][1]->toArray()[2])->toBe('Fila número 16');
+    expect($workbook['rows'][16]->toArray()[2])->toBe('Fila número 1');
 });
 
 test('an active authorized profile is required and export uses its separate permission', function () {

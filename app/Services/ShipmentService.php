@@ -34,21 +34,27 @@ class ShipmentService
         $search = $filters['search'] ?? '';
         $status = $filters['status'] ?? 'all';
 
+        $dateFrom = $filters['date_from'] ?? '';
+        $dateTo = $filters['date_to'] ?? '';
+
         return Shipment::query()
-            ->with('recipient:id,name')
+            ->with(['recipient' => fn ($query) => $query->where('company_id', $companyId)->select('id', 'name')])
             ->where('company_id', $companyId)
             ->when($status !== 'all', fn ($query) => $query->where('status', $status))
-            ->when($search !== '', function ($query) use ($search) {
+            ->when($dateFrom !== '', fn ($query) => $query->whereDate('created_at', '>=', $dateFrom))
+            ->when($dateTo !== '', fn ($query) => $query->whereDate('created_at', '<=', $dateTo))
+            ->when($search !== '', function ($query) use ($search, $companyId) {
                 $sizes  = $this->matchingValues(self::SIZE_LABELS, $search);
                 $cargos = $this->matchingValues(self::CARGO_LABELS, $search);
 
-                $query->where(function ($query) use ($search, $sizes, $cargos) {
-                    $query->whereHas('recipient', fn ($q) => $q->where('name', 'ilike', "%{$search}%"))
+                $query->where(function ($query) use ($search, $sizes, $cargos, $companyId) {
+                    $query->whereHas('recipient', fn ($recipient) => $recipient->where('company_id', $companyId)->where('name', 'ilike', "%{$search}%"))
                         ->orWhereIn('size', $sizes)
                         ->orWhereIn('cargo_type', $cargos);
                 });
             })
             ->latest()
+            ->orderByDesc('id')
             ->paginate(10);
     }
 

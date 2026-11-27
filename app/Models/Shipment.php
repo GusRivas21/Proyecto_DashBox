@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Shipment extends Model
 {
@@ -50,6 +51,11 @@ class Shipment extends Model
     public function shipmentReturns(): HasMany
     {
         return $this->hasMany(ShipmentReturn::class);
+    }
+
+    public function latestCompletedReturn(): HasOne
+    {
+        return $this->shipmentReturns()->one()->ofMany(['id' => 'max'], fn ($query) => $query->where('status', 'completed'));
     }
 
     public function auditLogs(): HasMany

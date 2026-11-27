@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\ShipmentReturn;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreShipmentReturnRequest extends FormRequest
 {
@@ -19,10 +17,18 @@ class StoreShipmentReturnRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'shipment_id' => ['required', 'integer', 'exists:shipments,id'],
-            'return_date' => ['required', 'date', 'before_or_equal:today'],
+            'shipment_id' => ['required', 'integer', 'min:1'],
             'reason' => ['required', 'string', 'max:255'],
-            'status' => ['sometimes', 'string', Rule::in(ShipmentReturn::STATUSES)],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'shipment_id.*' => 'Selecciona un envío válido.',
+            'reason.required' => 'Indica el motivo de la devolución.',
+            'reason.string' => 'Escribe el motivo de la devolución como texto.',
+            'reason.max' => 'El motivo puede tener hasta 255 caracteres.',
         ];
     }
 }
